@@ -63,8 +63,8 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   // Исключаем src/pages из поиска страниц (это компоненты, а не Pages Router)
-  // Используем только файлы page.tsx/page.ts в app/ директории
-  pageExtensions: ['page.tsx', 'page.ts'],
+  // Используем стандартные расширения для App Router
+  pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
   // Production output для интеграции с FastAPI
   output: 'standalone',
 };
