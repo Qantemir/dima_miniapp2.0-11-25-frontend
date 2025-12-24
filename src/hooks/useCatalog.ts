@@ -22,8 +22,9 @@ export function useCatalog() {
       } catch (error) {
         // Если сервер вернул 304 Not Modified, данные не изменились
         // React Query будет использовать кэшированные данные через staleTime
+        // Благодаря большому staleTime (10 минут), React Query вернет кэш
         if (error instanceof Error && error.message === 'NOT_MODIFIED') {
-          // Бросаем ошибку, но React Query использует кэш если данные свежие
+          // Бросаем ошибку, но React Query использует кэш если данные свежие (staleTime)
           // Это работает благодаря staleTime: 10 минут
           throw error;
         }
@@ -36,8 +37,6 @@ export function useCatalog() {
     // Не перезапрашивать автоматически
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    // Если данные свежие (staleTime), React Query вернет кэш даже при ошибке
-    throwOnError: false, // Не бросать ошибку, если данные в кэше свежие
   });
 }
 
