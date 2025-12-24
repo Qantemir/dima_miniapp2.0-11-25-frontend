@@ -22,12 +22,13 @@ const nextConfig = {
     
     // Если это относительный путь или не указан, используем внутренний прокси
     if (!apiUrl || apiUrl.startsWith('/')) {
-      // В production (Railway/Docker) FastAPI на порту 8000 (внутренний)
+      // В production (Railway/Docker) FastAPI использует PORT из окружения или 8080
       // Next.js проксирует /api запросы на FastAPI
+      const backendPort = process.env.PORT || process.env.BACKEND_PORT || '8080';
       return [
         {
           source: '/api/:path*',
-          destination: 'http://localhost:8000/api/:path*',
+          destination: `http://localhost:${backendPort}/api/:path*`,
         },
       ];
     }
