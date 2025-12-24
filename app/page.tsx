@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CatalogPage } from '@/pages/CatalogPage';
+import { CatalogPage } from '@pages/CatalogPage';
 import { getUserId, isAdmin } from '@/lib/telegram';
 import { ADMIN_IDS } from '@/types/api';
 import { useAdminView } from '@/contexts/AdminViewContext';
