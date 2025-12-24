@@ -16,7 +16,6 @@ import {
   type BroadcastResponse,
   type StoreStatus,
   type UpdateStoreStatusRequest,
-  type UpdatePaymentLinkRequest,
   type ApiError,
   type AdminCategoryDetail,
   type AdminOrdersResponse,
@@ -41,12 +40,20 @@ class ApiClient {
   private readonly httpRegex = /^https?:\/\//;
   private readonly appApiRegex = /\/app\/api/;
 
-  private buildHeaders(existing?: HeadersInit): Headers {
+  // Публичные эндпоинты, для которых не нужен X-Dev-User-Id
+  private readonly publicEndpoints = ['/catalog', '/store/status'];
+
+  private buildHeaders(existing?: HeadersInit, endpoint?: string): Headers {
     const headers = new Headers(existing);
-    const authHeaders = getRequestAuthHeaders();
-    // Оптимизированная обработка - напрямую проверяем ключи
-    if (authHeaders['X-Dev-User-Id']) {
-      headers.set('X-Dev-User-Id', authHeaders['X-Dev-User-Id']);
+    
+    // Не отправляем X-Dev-User-Id для публичных эндпоинтов
+    const isPublicEndpoint = endpoint && this.publicEndpoints.some(ep => endpoint.startsWith(ep));
+    if (!isPublicEndpoint) {
+      const authHeaders = getRequestAuthHeaders();
+      // Оптимизированная обработка - напрямую проверяем ключи
+      if (authHeaders['X-Dev-User-Id']) {
+        headers.set('X-Dev-User-Id', authHeaders['X-Dev-User-Id']);
+      }
     }
     return headers;
   }
@@ -76,7 +83,15 @@ class ApiClient {
 
       // Оптимизированная обработка заголовков
       const isFormData = typeof FormData !== 'undefined' && options?.body instanceof FormData;
-      const headers = this.buildHeaders(options?.headers as HeadersInit);
+      const headers = this.buildHeaders(options?.headers as HeadersInit, endpoint);
+      
+      // Добавляем ETag для каталога (если есть в localStorage)
+      if (endpoint === '/catalog' && typeof window !== 'undefined') {
+        const cachedEtag = localStorage.getItem('catalog-etag');
+        if (cachedEtag) {
+          headers.set('If-None-Match', cachedEtag);
+        }
+      }
       
       // Устанавливаем Content-Type только для JSON (FormData обрабатывается браузером)
       if (!isFormData && !headers.has('Content-Type')) {
@@ -98,6 +113,22 @@ class ApiClient {
 
       if (response.status === 204) {
         return undefined as T;
+      }
+
+      // Обработка 304 Not Modified для каталога с ETag
+      if (response.status === 304 && endpoint === '/catalog') {
+        // 304 означает что данные не изменились
+        // React Query будет использовать кэшированные данные
+        // Бросаем специальную ошибку, которую обработаем в getCatalog
+        throw new Error('NOT_MODIFIED');
+      }
+
+      // Сохраняем ETag для каталога
+      if (endpoint === '/catalog' && typeof window !== 'undefined') {
+        const etag = response.headers.get('ETag');
+        if (etag) {
+          localStorage.setItem('catalog-etag', etag);
+        }
       }
 
       // Оптимизированная проверка Content-Type
@@ -154,6 +185,11 @@ class ApiClient {
         }
       }
 
+      // Обработка 304 Not Modified - пробрасываем дальше для обработки в getCatalog
+      if (error instanceof Error && error.message === 'NOT_MODIFIED') {
+        throw error; // Пробрасываем для обработки в getCatalog
+      }
+
       // Пробрасываем ошибку дальше
       throw error instanceof Error ? error : new Error(String(error));
     }
@@ -163,7 +199,21 @@ class ApiClient {
 
   async getCatalog(): Promise<CatalogResponse> {
     // Оптимизация: используем строку напрямую вместо createDedupKey для простых случаев
-    return deduplicateRequest('catalog', () => this.request<CatalogResponse>('/catalog'));
+    // ETag поддержка добавлена в request() методе
+    return deduplicateRequest('catalog', async () => {
+      try {
+        return await this.request<CatalogResponse>('/catalog');
+      } catch (error) {
+        // Если сервер вернул 304 Not Modified, данные не изменились
+        // React Query будет использовать кэшированные данные
+        if (error instanceof Error && error.message === 'NOT_MODIFIED') {
+          // Бросаем ошибку, чтобы React Query использовал кэш
+          // React Query обработает это через staleTime и вернет кэшированные данные
+          throw error;
+        }
+        throw error;
+      }
+    });
   }
 
   async getCart(): Promise<Cart> {
@@ -374,14 +424,7 @@ class ApiClient {
     });
   }
 
-  async setPaymentLink(
-    data: UpdatePaymentLinkRequest
-  ): Promise<StoreStatus> {
-    return this.request<StoreStatus>('/admin/store/payment-link', {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    });
-  }
+  // setPaymentLink удален, т.к. payment_link больше не используется
 }
 
 export const api = new ApiClient(API_BASE_URL);

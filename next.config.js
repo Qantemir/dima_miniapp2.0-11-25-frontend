@@ -16,13 +16,6 @@ const nextConfig = {
     // Поддерживаем оба варианта: стандартный NEXT_PUBLIC_API_URL и старый NEXT_PUBLIC_VITE_API_URL для совместимости
     // Читаем переменную напрямую - если не установлена, будет undefined
     // Код в src/types/api.ts будет использовать fallback '/api' только если переменная действительно не установлена
-    
-    // Логируем для отладки во время сборки
-    ...(process.env.NEXT_PUBLIC_VITE_API_URL && {
-      // Если переменная установлена, логируем её
-      _DEBUG_API_URL: `Found NEXT_PUBLIC_VITE_API_URL: ${process.env.NEXT_PUBLIC_VITE_API_URL}`,
-    }),
-    
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL || undefined,
     NEXT_PUBLIC_VITE_API_URL: process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL || undefined, // Для обратной совместимости
     NEXT_PUBLIC_VITE_PUBLIC_URL: process.env.NEXT_PUBLIC_VITE_PUBLIC_URL || process.env.VITE_PUBLIC_URL || process.env.RAILWAY_PUBLIC_DOMAIN || 'http://localhost:3000',
@@ -34,19 +27,6 @@ const nextConfig = {
     // Поддерживаем оба варианта: NEXT_PUBLIC_API_URL (рекомендуется) и NEXT_PUBLIC_VITE_API_URL (для совместимости)
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL;
     
-    // Логируем для отладки во время сборки
-    console.log('[Next.js rewrites] ===== Настройка API Rewrites =====');
-    console.log('[Next.js rewrites] process.env.NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL || '(не установлен)');
-    console.log('[Next.js rewrites] process.env.NEXT_PUBLIC_VITE_API_URL:', process.env.NEXT_PUBLIC_VITE_API_URL || '(не установлен)');
-    console.log('[Next.js rewrites] process.env.VITE_API_URL:', process.env.VITE_API_URL || '(не установлен)');
-    console.log('[Next.js rewrites] Используемое значение:', apiUrl || '(не установлен)');
-    
-    // ВАЖНО: Если переменная не установлена, предупреждаем
-    if (!apiUrl) {
-      console.warn('[Next.js rewrites] ⚠️ ВНИМАНИЕ: API URL не установлен!');
-      console.warn('[Next.js rewrites] ⚠️ Установите NEXT_PUBLIC_VITE_API_URL в Railway перед сборкой!');
-    }
-    
     // Если apiUrl указан и это НЕ относительный путь (не начинается с /),
     // значит это внешний URL. Next.js rewrites НЕ МОГУТ проксировать на внешние URL между контейнерами.
     // ОТКЛЮЧАЕМ rewrites полностью - клиент будет использовать полный URL напрямую.
@@ -56,20 +36,17 @@ const nextConfig = {
       
       // Если это полный URL (начинается с http:// или https://)
       if (normalizedApiUrl.startsWith('http://') || normalizedApiUrl.startsWith('https://')) {
-        console.log('[Next.js rewrites] ✅ Отключаем rewrites - используется полный URL:', normalizedApiUrl);
         return [];
       }
       
       // Если это голый домен (не начинается с /), значит это внешний URL
       // ОТКЛЮЧАЕМ rewrites - клиент будет использовать полный URL
       if (!normalizedApiUrl.startsWith('/')) {
-        console.log('[Next.js rewrites] ✅ Отключаем rewrites - внешний URL (голый домен):', normalizedApiUrl);
         return [];
       }
       
       // Если это относительный путь (/api), значит фронтенд и бэкенд в одном контейнере
       // Используем внутренний прокси на localhost
-      console.log('[Next.js rewrites] Используем внутренний прокси для относительного пути:', normalizedApiUrl);
       const backendPort = process.env.PORT || process.env.BACKEND_PORT || '8080';
       return [
         {
@@ -81,8 +58,6 @@ const nextConfig = {
     
     // FALLBACK: Если переменная не установлена, отключаем rewrites
     // Клиент будет использовать API_BASE_URL из src/types/api.ts (который будет '/api' по умолчанию)
-    console.warn('[Next.js rewrites] ⚠️ NEXT_PUBLIC_API_URL или NEXT_PUBLIC_VITE_API_URL не установлен, отключаем rewrites');
-    console.warn('[Next.js rewrites] ⚠️ В production это приведет к ошибкам 404!');
     return [];
   },
   // Оптимизация сборки
@@ -93,7 +68,12 @@ const nextConfig = {
   },
   // Экспериментальные функции для производительности
   experimental: {
-    optimizePackageImports: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', 'lucide-react'],
+    optimizePackageImports: [
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      'lucide-react',
+      'framer-motion',
+    ],
   },
   // Указываем корень проекта для устранения предупреждения о workspace
   outputFileTracingRoot: path.join(__dirname),

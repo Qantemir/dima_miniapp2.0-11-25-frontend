@@ -30,11 +30,7 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  icons: {
-    icon: '/favicon.svg',
-    shortcut: '/favicon.svg',
-    apple: '/favicon.svg',
-  },
+  // Favicon убран, так как приложение используется только в Telegram WebView
   openGraph: {
     type: 'website',
     locale: 'ru_RU',

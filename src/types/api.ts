@@ -130,20 +130,16 @@ export interface AdminOrdersResponse {
 export interface StoreStatus {
   is_sleep_mode: boolean;
   sleep_message?: string;
-  sleep_until?: string;
-  payment_link?: string | null;
-  updated_at?: string;
+  // sleep_until и payment_link убраны, т.к. не используются
 }
 
 export interface UpdateStoreStatusRequest {
   sleep: boolean;
   message?: string;
-  sleep_until?: string | null;
+  // sleep_until убран, т.к. не используется
 }
 
-export interface UpdatePaymentLinkRequest {
-  url?: string | null;
-}
+// UpdatePaymentLinkRequest удален, т.к. payment_link больше не используется
 
 export interface CreateOrderRequest {
   name: string;
@@ -177,100 +173,28 @@ export interface ApiError {
 // - голые домены/поддомены получали https://;
 // - путь всегда заканчивался на /api.
 
-// Утилита для получения env переменных (работает и на клиенте, и на сервере)
+// Утилита для получения env переменных (используется только для ADMIN_IDS)
 const getEnvVar = (key: string, defaultValue: string = ''): string => {
-  // В Next.js для клиентских переменных используем NEXT_PUBLIC_ префикс
   const nextPublicKey = `NEXT_PUBLIC_${key}`;
-  
-  // Для API_URL также проверяем старый вариант VITE_API_URL для обратной совместимости
-  const viteKey = key === 'API_URL' ? 'VITE_API_URL' : key;
-  const nextPublicViteKey = key === 'API_URL' ? 'NEXT_PUBLIC_VITE_API_URL' : nextPublicKey;
-  
-  // Пробуем разные варианты чтения переменной (приоритет: стандартный Next.js, потом Vite вариант)
   const value = 
     process.env[nextPublicKey] || 
-    (key === 'API_URL' ? process.env[nextPublicViteKey] : undefined) ||
-    process.env[nextPublicViteKey] ||
-    process.env[viteKey] ||
     process.env[key] || 
     (typeof window !== 'undefined' && (window as any).__NEXT_DATA__?.env?.[nextPublicKey]) ||
-    (typeof window !== 'undefined' && key === 'API_URL' && (window as any).__NEXT_DATA__?.env?.[nextPublicViteKey]) ||
     defaultValue;
-  
   return String(value).trim();
 };
 
-// Прямое чтение переменной для отладки (поддерживаем оба варианта для совместимости)
-// Приоритет: NEXT_PUBLIC_API_URL > NEXT_PUBLIC_VITE_API_URL > VITE_API_URL > '/api'
+// Чтение API URL с приоритетом: NEXT_PUBLIC_API_URL > NEXT_PUBLIC_VITE_API_URL > VITE_API_URL > '/api'
 // В Next.js переменные NEXT_PUBLIC_* доступны через process.env на клиенте
-// Они инжектируются во время сборки через next.config.js секцию env
-
-// Сначала пробуем прочитать через process.env (стандартный способ Next.js)
-let directNextPublicApiUrl = typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_API_URL : undefined;
-let directNextPublicViteApiUrl = typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_VITE_API_URL : undefined;
-const directViteApiUrl = typeof process !== 'undefined' ? process.env.VITE_API_URL : undefined;
-
-// На клиенте также проверяем через window.__NEXT_DATA__ (если доступно)
-if (typeof window !== 'undefined') {
-  const nextData = (window as any).__NEXT_DATA__;
-  if (nextData?.env) {
-    // Переменные из next.config.js env секции доступны здесь
-    if (!directNextPublicApiUrl && nextData.env.NEXT_PUBLIC_API_URL) {
-      directNextPublicApiUrl = nextData.env.NEXT_PUBLIC_API_URL;
-    }
-    if (!directNextPublicViteApiUrl && nextData.env.NEXT_PUBLIC_VITE_API_URL) {
-      directNextPublicViteApiUrl = nextData.env.NEXT_PUBLIC_VITE_API_URL;
-    }
-  }
-}
-
-// Читаем переменную напрямую с приоритетом
 const rawApiUrl = (
-  directNextPublicApiUrl || 
-  directNextPublicViteApiUrl || 
-  directViteApiUrl || 
+  process.env.NEXT_PUBLIC_API_URL || 
+  process.env.NEXT_PUBLIC_VITE_API_URL || 
+  process.env.VITE_API_URL || 
   '/api'
 ).replace(/^["']|["']$/g, '').trim();
 
-// Логируем ВСЕГДА для отладки (и на клиенте, и на сервере)
-console.log('[API Config] ===== Настройка API URL =====');
-console.log('[API Config] typeof process:', typeof process);
-console.log('[API Config] typeof window:', typeof window);
-if (typeof process !== 'undefined') {
-  console.log('[API Config] process.env.NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL || '(не установлен)');
-  console.log('[API Config] process.env.NEXT_PUBLIC_VITE_API_URL:', process.env.NEXT_PUBLIC_VITE_API_URL || '(не установлен)');
-  console.log('[API Config] process.env.VITE_API_URL:', process.env.VITE_API_URL || '(не установлен)');
-  console.log('[API Config] process.env.NODE_ENV:', process.env.NODE_ENV || '(не установлен)');
-}
-console.log('[API Config] Прочитанные значения:');
-console.log('[API Config]   - directNextPublicApiUrl:', directNextPublicApiUrl || '(не установлен)');
-console.log('[API Config]   - directNextPublicViteApiUrl:', directNextPublicViteApiUrl || '(не установлен)');
-console.log('[API Config]   - directViteApiUrl:', directViteApiUrl || '(не установлен)');
-console.log('[API Config] Используемое значение (rawApiUrl):', rawApiUrl);
-if (typeof window !== 'undefined') {
-  console.log('[API Config] window.location.hostname:', window.location.hostname);
-  console.log('[API Config] window.location.origin:', window.location.origin);
-  // Проверяем, доступна ли переменная через __NEXT_DATA__
-  const nextData = (window as any).__NEXT_DATA__;
-  if (nextData) {
-    console.log('[API Config] __NEXT_DATA__ существует:', !!nextData);
-    if (nextData.env) {
-      console.log('[API Config] __NEXT_DATA__.env существует:', !!nextData.env);
-      console.log('[API Config] __NEXT_DATA__.env.NEXT_PUBLIC_VITE_API_URL:', nextData.env.NEXT_PUBLIC_VITE_API_URL || '(не установлен)');
-      console.log('[API Config] __NEXT_DATA__.env.NEXT_PUBLIC_API_URL:', nextData.env.NEXT_PUBLIC_API_URL || '(не установлен)');
-      console.log('[API Config] Все переменные в __NEXT_DATA__.env:', Object.keys(nextData.env || {}));
-    } else {
-      console.log('[API Config] ⚠️ __NEXT_DATA__.env не существует!');
-    }
-  } else {
-    console.log('[API Config] ⚠️ __NEXT_DATA__ не существует!');
-  }
-}
-
 const normalizeApiBaseUrl = (value: string) => {
   if (!value) return '/api';
-  // Убираем кавычки, если есть
-  value = value.replace(/^["']|["']$/g, '').trim();
   // Абсолютный URL
   if (value.startsWith('http://') || value.startsWith('https://')) {
     return value.replace(/\/$/, '');
@@ -291,9 +215,6 @@ let apiBaseUrl = normalizeApiBaseUrl(rawApiUrl)
 if (!apiBaseUrl.endsWith('/api')) {
   apiBaseUrl = apiBaseUrl.replace(/\/$/, '') + '/api';
 }
-
-// Логируем финальный API_BASE_URL ВСЕГДА
-console.log('[API Config] ✅ Финальный API_BASE_URL:', apiBaseUrl);
 
 // ВАЖНО: Если используется относительный путь '/api', но мы в production на Railway,
 // это означает, что переменная окружения не установлена!

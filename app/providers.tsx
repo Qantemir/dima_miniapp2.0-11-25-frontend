@@ -2,14 +2,21 @@
 
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { QueryClientProvider, useQueryClient } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { queryClient, queryKeys } from '@/lib/react-query';
 import { AdminViewProvider } from '@/contexts/AdminViewContext';
 import { StoreStatusProvider } from '@/contexts/StoreStatusContext';
 import { StoreSleepOverlay } from '@/components/StoreSleepOverlay';
 import { initTelegram } from '@/lib/telegram';
 import { api } from '@/lib/api';
+
+// Динамический импорт ReactQueryDevtools только в development, чтобы не включать его в production bundle
+const ReactQueryDevtools = process.env.NODE_ENV === 'development'
+  ? dynamic(() => import('@tanstack/react-query-devtools').then(mod => mod.ReactQueryDevtools), {
+      ssr: false,
+    })
+  : () => null;
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

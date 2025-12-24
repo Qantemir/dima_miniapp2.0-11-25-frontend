@@ -10,7 +10,7 @@ type PendingRequest<T> = {
 };
 
 const pendingRequests = new Map<string, PendingRequest<unknown>>();
-const REQUEST_TIMEOUT = 3000; // 3 секунды - оптимизировано для быстрой работы
+const REQUEST_TIMEOUT = 5000; // 5 секунд - увеличено для медленных сетей
 
 // Оптимизированная очистка - выполняется не каждый раз, а только при необходимости
 let lastCleanup = 0;
