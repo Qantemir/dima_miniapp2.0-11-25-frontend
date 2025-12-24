@@ -18,17 +18,54 @@ const nextConfig = {
   // Настройка для API прокси
   async rewrites() {
     // В production на Railway фронтенд и бэкенд - разные сервисы
-    // Используем переменную окружения BACKEND_URL или RAILWAY_SERVICE_URL для бэкенда
+    // Используем переменную окружения BACKEND_URL для бэкенда
     const backendUrl = process.env.BACKEND_URL || process.env.RAILWAY_SERVICE_URL;
     const apiUrl = process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL;
     
-    // Если указан BACKEND_URL, используем его (для разных сервисов в Railway)
+    // Если указан BACKEND_URL, используем его для проксирования
     if (backendUrl) {
-      let destination = backendUrl.trim();
+      let destination = String(backendUrl).trim();
+      // Убираем кавычки если есть
+      destination = destination.replace(/^["']|["']$/g, '');
+      
+      // Если это не полный URL (нет протокола), добавляем https://
       if (!destination.startsWith('http://') && !destination.startsWith('https://')) {
         destination = `https://${destination}`;
       }
+      
+      // Убираем /api из конца если есть, так как мы добавим его в destination
       destination = destination.replace(/\/api\/?$/, '').replace(/\/$/, '');
+      
+      return [
+        {
+          source: '/api/:path*',
+          destination: `${destination}/api/:path*`,
+        },
+      ];
+    }
+    
+    // Если apiUrl указан и это полный URL (начинается с http:// или https://), 
+    // НЕ используем rewrites - клиент будет делать запросы напрямую
+    if (apiUrl && (apiUrl.startsWith('http://') || apiUrl.startsWith('https://'))) {
+      // Не проксируем - клиент будет использовать полный URL напрямую
+      return [];
+    }
+    
+    // Если apiUrl указан и это не относительный путь (голый домен), 
+    // извлекаем домен и используем для проксирования
+    if (apiUrl && !apiUrl.startsWith('/')) {
+      let destination = String(apiUrl).trim();
+      // Убираем кавычки если есть
+      destination = destination.replace(/^["']|["']$/g, '');
+      
+      // Если это не полный URL (нет протокола), добавляем https://
+      if (!destination.startsWith('http://') && !destination.startsWith('https://')) {
+        destination = `https://${destination}`;
+      }
+      
+      // Убираем /api из конца если есть, так как мы добавим его в destination
+      destination = destination.replace(/\/api\/?$/, '').replace(/\/$/, '');
+      
       return [
         {
           source: '/api/:path*',
@@ -38,29 +75,13 @@ const nextConfig = {
     }
     
     // Если это относительный путь или не указан, используем внутренний прокси (для одного сервиса)
-    if (!apiUrl || apiUrl.startsWith('/')) {
-      // В production (Railway/Docker) FastAPI использует PORT из окружения или 8080
-      // Next.js проксирует /api запросы на FastAPI
-      const backendPort = process.env.PORT || process.env.BACKEND_PORT || '8080';
-      return [
-        {
-          source: '/api/:path*',
-          destination: `http://localhost:${backendPort}/api/:path*`,
-        },
-      ];
-    }
-    
-    // Внешний API URL (для dev режима)
-    let destination = apiUrl.trim();
-    if (!destination.startsWith('http://') && !destination.startsWith('https://')) {
-      destination = `https://${destination}`;
-    }
-    destination = destination.replace(/\/api\/?$/, '').replace(/\/$/, '');
-    
+    // В production (Railway/Docker) FastAPI использует PORT из окружения или 8080
+    // Next.js проксирует /api запросы на FastAPI
+    const backendPort = process.env.PORT || process.env.BACKEND_PORT || '8080';
     return [
       {
         source: '/api/:path*',
-        destination: `${destination}/api/:path*`,
+        destination: `http://localhost:${backendPort}/api/:path*`,
       },
     ];
   },
