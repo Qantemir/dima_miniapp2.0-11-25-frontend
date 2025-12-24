@@ -208,7 +208,7 @@ const getEnvVar = (key: string, defaultValue: string = ''): string => {
 // Сначала пробуем прочитать через process.env (стандартный способ Next.js)
 let directNextPublicApiUrl = typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_API_URL : undefined;
 let directNextPublicViteApiUrl = typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_VITE_API_URL : undefined;
-let directViteApiUrl = typeof process !== 'undefined' ? process.env.VITE_API_URL : undefined;
+const directViteApiUrl = typeof process !== 'undefined' ? process.env.VITE_API_URL : undefined;
 
 // На клиенте также проверяем через window.__NEXT_DATA__ (если доступно)
 if (typeof window !== 'undefined') {

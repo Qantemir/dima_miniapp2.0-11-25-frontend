@@ -3,6 +3,19 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Объявляем ARG для переменных окружения, которые нужны во время сборки
+# Railway автоматически передает переменные окружения как build args
+ARG NEXT_PUBLIC_VITE_API_URL
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_VITE_PUBLIC_URL
+ARG NEXT_PUBLIC_VITE_ADMIN_IDS
+
+# Устанавливаем переменные окружения из ARG для использования во время сборки
+ENV NEXT_PUBLIC_VITE_API_URL=$NEXT_PUBLIC_VITE_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_VITE_PUBLIC_URL=$NEXT_PUBLIC_VITE_PUBLIC_URL
+ENV NEXT_PUBLIC_VITE_ADMIN_IDS=$NEXT_PUBLIC_VITE_ADMIN_IDS
+
 # Копируем package.json и yarn.lock
 COPY package.json yarn.lock ./
 
@@ -14,6 +27,11 @@ COPY . .
 
 # Очищаем кэш Next.js перед сборкой (на случай если есть старые файлы)
 RUN rm -rf .next node_modules/.cache
+
+# Логируем переменные для отладки (во время сборки)
+RUN echo "Build-time env vars:" && \
+    echo "NEXT_PUBLIC_VITE_API_URL=$NEXT_PUBLIC_VITE_API_URL" && \
+    echo "NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL"
 
 # Собираем Next.js приложение
 RUN yarn build
