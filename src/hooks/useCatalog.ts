@@ -16,27 +16,22 @@ export const CATALOG_QUERY_KEY = queryKeys.catalog;
 export function useCatalog() {
   return useQuery<CatalogResponse>({
     queryKey: CATALOG_QUERY_KEY,
-    queryFn: async () => {
-      try {
-        return await api.getCatalog();
-      } catch (error) {
-        // Если сервер вернул 304 Not Modified, данные не изменились
-        // React Query будет использовать кэшированные данные через staleTime
-        // Благодаря большому staleTime (10 минут), React Query вернет кэш
-        if (error instanceof Error && error.message === 'NOT_MODIFIED') {
-          // Бросаем ошибку, но React Query использует кэш если данные свежие (staleTime)
-          // Это работает благодаря staleTime: 10 минут
-          throw error;
-        }
-        throw error;
-      }
-    },
+    queryFn: () => api.getCatalog(),
     // Увеличенный staleTime для каталога - данные меняются редко
     staleTime: 10 * 60 * 1000, // 10 минут - данные считаются свежими (увеличено для производительности)
     gcTime: 15 * 60 * 1000, // 15 минут кэш
     // Не перезапрашивать автоматически
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    // Если сервер вернул 304 Not Modified, React Query использует кэш через staleTime
+    // Благодаря большому staleTime (10 минут), кэш будет использован даже при ошибке 304
+    retry: (failureCount, error) => {
+      // Не повторять запрос при 304 Not Modified
+      if (error instanceof Error && error.message === 'NOT_MODIFIED') {
+        return false;
+      }
+      return failureCount < 1; // Одна попытка повтора для других ошибок
+    },
   });
 }
 
