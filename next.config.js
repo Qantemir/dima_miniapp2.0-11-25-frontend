@@ -11,22 +11,26 @@ const nextConfig = {
   },
   // Переменные окружения для клиентской стороны (с префиксом NEXT_PUBLIC_)
   // ВАЖНО: Эти переменные инжектируются во время сборки, не во время выполнения!
-  // Убедитесь, что NEXT_PUBLIC_VITE_API_URL установлена в Railway ДО сборки
+  // Убедитесь, что NEXT_PUBLIC_API_URL или NEXT_PUBLIC_VITE_API_URL установлена в Railway ДО сборки
   env: {
+    // Поддерживаем оба варианта: стандартный NEXT_PUBLIC_API_URL и старый NEXT_PUBLIC_VITE_API_URL для совместимости
     // Читаем переменную напрямую - если не установлена, будет undefined
     // Код в src/types/api.ts будет использовать fallback '/api' только если переменная действительно не установлена
-    NEXT_PUBLIC_VITE_API_URL: process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL || undefined,
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL || undefined,
+    NEXT_PUBLIC_VITE_API_URL: process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL || undefined, // Для обратной совместимости
     NEXT_PUBLIC_VITE_PUBLIC_URL: process.env.NEXT_PUBLIC_VITE_PUBLIC_URL || process.env.VITE_PUBLIC_URL || process.env.RAILWAY_PUBLIC_DOMAIN || 'http://localhost:3000',
     NEXT_PUBLIC_VITE_ADMIN_IDS: process.env.NEXT_PUBLIC_VITE_ADMIN_IDS || process.env.VITE_ADMIN_IDS || '',
   },
   // Настройка для API прокси
   async rewrites() {
     // В production на Railway фронтенд и бэкенд - разные сервисы
-    // Используем только NEXT_PUBLIC_VITE_API_URL - это единственная переменная, которая нужна
-    const apiUrl = process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL;
+    // Поддерживаем оба варианта: NEXT_PUBLIC_API_URL (рекомендуется) и NEXT_PUBLIC_VITE_API_URL (для совместимости)
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL;
     
     // Логируем для отладки
-    console.log('[Next.js rewrites] NEXT_PUBLIC_VITE_API_URL:', apiUrl || '(не установлен)');
+    console.log('[Next.js rewrites] NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL || '(не установлен)');
+    console.log('[Next.js rewrites] NEXT_PUBLIC_VITE_API_URL:', process.env.NEXT_PUBLIC_VITE_API_URL || '(не установлен)');
+    console.log('[Next.js rewrites] Используемое значение:', apiUrl || '(не установлен)');
     
     // Если apiUrl указан и это НЕ относительный путь (не начинается с /),
     // значит это внешний URL. Next.js rewrites НЕ МОГУТ проксировать на внешние URL между контейнерами.
@@ -62,7 +66,8 @@ const nextConfig = {
     
     // FALLBACK: Если переменная не установлена, отключаем rewrites
     // Клиент будет использовать API_BASE_URL из src/types/api.ts (который будет '/api' по умолчанию)
-    console.warn('[Next.js rewrites] ⚠️ NEXT_PUBLIC_VITE_API_URL не установлен, отключаем rewrites');
+    console.warn('[Next.js rewrites] ⚠️ NEXT_PUBLIC_API_URL или NEXT_PUBLIC_VITE_API_URL не установлен, отключаем rewrites');
+    console.warn('[Next.js rewrites] ⚠️ В production это приведет к ошибкам 404!');
     return [];
   },
   // Оптимизация сборки
