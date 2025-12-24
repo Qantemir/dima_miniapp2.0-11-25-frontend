@@ -17,10 +17,27 @@ const nextConfig = {
   },
   // Настройка для API прокси
   async rewrites() {
-    // В production на Railway/других платформах API на том же домене
+    // В production на Railway фронтенд и бэкенд - разные сервисы
+    // Используем переменную окружения BACKEND_URL или RAILWAY_SERVICE_URL для бэкенда
+    const backendUrl = process.env.BACKEND_URL || process.env.RAILWAY_SERVICE_URL;
     const apiUrl = process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL;
     
-    // Если это относительный путь или не указан, используем внутренний прокси
+    // Если указан BACKEND_URL, используем его (для разных сервисов в Railway)
+    if (backendUrl) {
+      let destination = backendUrl.trim();
+      if (!destination.startsWith('http://') && !destination.startsWith('https://')) {
+        destination = `https://${destination}`;
+      }
+      destination = destination.replace(/\/api\/?$/, '').replace(/\/$/, '');
+      return [
+        {
+          source: '/api/:path*',
+          destination: `${destination}/api/:path*`,
+        },
+      ];
+    }
+    
+    // Если это относительный путь или не указан, используем внутренний прокси (для одного сервиса)
     if (!apiUrl || apiUrl.startsWith('/')) {
       // В production (Railway/Docker) FastAPI использует PORT из окружения или 8080
       // Next.js проксирует /api запросы на FastAPI
