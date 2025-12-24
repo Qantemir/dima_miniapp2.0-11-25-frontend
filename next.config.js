@@ -16,6 +16,13 @@ const nextConfig = {
     // Поддерживаем оба варианта: стандартный NEXT_PUBLIC_API_URL и старый NEXT_PUBLIC_VITE_API_URL для совместимости
     // Читаем переменную напрямую - если не установлена, будет undefined
     // Код в src/types/api.ts будет использовать fallback '/api' только если переменная действительно не установлена
+    
+    // Логируем для отладки во время сборки
+    ...(process.env.NEXT_PUBLIC_VITE_API_URL && {
+      // Если переменная установлена, логируем её
+      _DEBUG_API_URL: `Found NEXT_PUBLIC_VITE_API_URL: ${process.env.NEXT_PUBLIC_VITE_API_URL}`,
+    }),
+    
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL || undefined,
     NEXT_PUBLIC_VITE_API_URL: process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL || undefined, // Для обратной совместимости
     NEXT_PUBLIC_VITE_PUBLIC_URL: process.env.NEXT_PUBLIC_VITE_PUBLIC_URL || process.env.VITE_PUBLIC_URL || process.env.RAILWAY_PUBLIC_DOMAIN || 'http://localhost:3000',
@@ -27,10 +34,18 @@ const nextConfig = {
     // Поддерживаем оба варианта: NEXT_PUBLIC_API_URL (рекомендуется) и NEXT_PUBLIC_VITE_API_URL (для совместимости)
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL;
     
-    // Логируем для отладки
-    console.log('[Next.js rewrites] NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL || '(не установлен)');
-    console.log('[Next.js rewrites] NEXT_PUBLIC_VITE_API_URL:', process.env.NEXT_PUBLIC_VITE_API_URL || '(не установлен)');
+    // Логируем для отладки во время сборки
+    console.log('[Next.js rewrites] ===== Настройка API Rewrites =====');
+    console.log('[Next.js rewrites] process.env.NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL || '(не установлен)');
+    console.log('[Next.js rewrites] process.env.NEXT_PUBLIC_VITE_API_URL:', process.env.NEXT_PUBLIC_VITE_API_URL || '(не установлен)');
+    console.log('[Next.js rewrites] process.env.VITE_API_URL:', process.env.VITE_API_URL || '(не установлен)');
     console.log('[Next.js rewrites] Используемое значение:', apiUrl || '(не установлен)');
+    
+    // ВАЖНО: Если переменная не установлена, предупреждаем
+    if (!apiUrl) {
+      console.warn('[Next.js rewrites] ⚠️ ВНИМАНИЕ: API URL не установлен!');
+      console.warn('[Next.js rewrites] ⚠️ Установите NEXT_PUBLIC_VITE_API_URL в Railway перед сборкой!');
+    }
     
     // Если apiUrl указан и это НЕ относительный путь (не начинается с /),
     // значит это внешний URL. Next.js rewrites НЕ МОГУТ проксировать на внешние URL между контейнерами.

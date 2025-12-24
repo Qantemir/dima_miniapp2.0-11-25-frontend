@@ -202,9 +202,27 @@ const getEnvVar = (key: string, defaultValue: string = ''): string => {
 
 // Прямое чтение переменной для отладки (поддерживаем оба варианта для совместимости)
 // Приоритет: NEXT_PUBLIC_API_URL > NEXT_PUBLIC_VITE_API_URL > VITE_API_URL > '/api'
-const directNextPublicApiUrl = process.env.NEXT_PUBLIC_API_URL;
-const directNextPublicViteApiUrl = process.env.NEXT_PUBLIC_VITE_API_URL;
-const directViteApiUrl = process.env.VITE_API_URL;
+// В Next.js переменные NEXT_PUBLIC_* доступны через process.env на клиенте
+// Они инжектируются во время сборки через next.config.js секцию env
+
+// Сначала пробуем прочитать через process.env (стандартный способ Next.js)
+let directNextPublicApiUrl = typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_API_URL : undefined;
+let directNextPublicViteApiUrl = typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_VITE_API_URL : undefined;
+let directViteApiUrl = typeof process !== 'undefined' ? process.env.VITE_API_URL : undefined;
+
+// На клиенте также проверяем через window.__NEXT_DATA__ (если доступно)
+if (typeof window !== 'undefined') {
+  const nextData = (window as any).__NEXT_DATA__;
+  if (nextData?.env) {
+    // Переменные из next.config.js env секции доступны здесь
+    if (!directNextPublicApiUrl && nextData.env.NEXT_PUBLIC_API_URL) {
+      directNextPublicApiUrl = nextData.env.NEXT_PUBLIC_API_URL;
+    }
+    if (!directNextPublicViteApiUrl && nextData.env.NEXT_PUBLIC_VITE_API_URL) {
+      directNextPublicViteApiUrl = nextData.env.NEXT_PUBLIC_VITE_API_URL;
+    }
+  }
+}
 
 // Читаем переменную напрямую с приоритетом
 const rawApiUrl = (
@@ -216,20 +234,36 @@ const rawApiUrl = (
 
 // Логируем ВСЕГДА для отладки (и на клиенте, и на сервере)
 console.log('[API Config] ===== Настройка API URL =====');
-console.log('[API Config] process.env.NEXT_PUBLIC_API_URL:', directNextPublicApiUrl || '(не установлен)');
-console.log('[API Config] process.env.NEXT_PUBLIC_VITE_API_URL:', directNextPublicViteApiUrl || '(не установлен)');
-console.log('[API Config] process.env.VITE_API_URL:', directViteApiUrl || '(не установлен)');
-console.log('[API Config] NODE_ENV:', process.env.NODE_ENV || '(не установлен)');
-console.log('[API Config] Используемое значение (rawApiUrl):', rawApiUrl);
+console.log('[API Config] typeof process:', typeof process);
 console.log('[API Config] typeof window:', typeof window);
+if (typeof process !== 'undefined') {
+  console.log('[API Config] process.env.NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL || '(не установлен)');
+  console.log('[API Config] process.env.NEXT_PUBLIC_VITE_API_URL:', process.env.NEXT_PUBLIC_VITE_API_URL || '(не установлен)');
+  console.log('[API Config] process.env.VITE_API_URL:', process.env.VITE_API_URL || '(не установлен)');
+  console.log('[API Config] process.env.NODE_ENV:', process.env.NODE_ENV || '(не установлен)');
+}
+console.log('[API Config] Прочитанные значения:');
+console.log('[API Config]   - directNextPublicApiUrl:', directNextPublicApiUrl || '(не установлен)');
+console.log('[API Config]   - directNextPublicViteApiUrl:', directNextPublicViteApiUrl || '(не установлен)');
+console.log('[API Config]   - directViteApiUrl:', directViteApiUrl || '(не установлен)');
+console.log('[API Config] Используемое значение (rawApiUrl):', rawApiUrl);
 if (typeof window !== 'undefined') {
   console.log('[API Config] window.location.hostname:', window.location.hostname);
   console.log('[API Config] window.location.origin:', window.location.origin);
   // Проверяем, доступна ли переменная через __NEXT_DATA__
-  const nextDataEnv = (window as any).__NEXT_DATA__?.env;
-  if (nextDataEnv) {
-    console.log('[API Config] __NEXT_DATA__.env.NEXT_PUBLIC_VITE_API_URL:', nextDataEnv.NEXT_PUBLIC_VITE_API_URL || '(не установлен)');
-    console.log('[API Config] __NEXT_DATA__.env.NEXT_PUBLIC_API_URL:', nextDataEnv.NEXT_PUBLIC_API_URL || '(не установлен)');
+  const nextData = (window as any).__NEXT_DATA__;
+  if (nextData) {
+    console.log('[API Config] __NEXT_DATA__ существует:', !!nextData);
+    if (nextData.env) {
+      console.log('[API Config] __NEXT_DATA__.env существует:', !!nextData.env);
+      console.log('[API Config] __NEXT_DATA__.env.NEXT_PUBLIC_VITE_API_URL:', nextData.env.NEXT_PUBLIC_VITE_API_URL || '(не установлен)');
+      console.log('[API Config] __NEXT_DATA__.env.NEXT_PUBLIC_API_URL:', nextData.env.NEXT_PUBLIC_API_URL || '(не установлен)');
+      console.log('[API Config] Все переменные в __NEXT_DATA__.env:', Object.keys(nextData.env || {}));
+    } else {
+      console.log('[API Config] ⚠️ __NEXT_DATA__.env не существует!');
+    }
+  } else {
+    console.log('[API Config] ⚠️ __NEXT_DATA__ не существует!');
   }
 }
 
