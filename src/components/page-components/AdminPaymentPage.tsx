@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { CreditCard, ExternalLink } from '@/components/icons';
 import { useAdminGuard } from '@/hooks/useAdminGuard';
 import { api } from '@/lib/api';
@@ -121,13 +121,15 @@ export const AdminPaymentPage = () => {
           </div>
         </Card>
 
-        <Alert>
-          <AlertTitle>Как это работает</AlertTitle>
-          <AlertDescription className="text-sm text-muted-foreground">
-            1) Вставьте ссылку Kaspi Pay или другого провайдера. 2) Клиент нажмёт кнопку «Оплатить» в форме оформления заказа —
-            ссылка откроется в новом окне Telegram. 3) После перевода он вернётся и прикрепит чек, как и раньше.
-          </AlertDescription>
-        </Alert>
+        <Card>
+          <CardHeader>
+            <CardTitle>Как это работает</CardTitle>
+            <CardDescription className="text-sm text-muted-foreground">
+              1) Вставьте ссылку Kaspi Pay или другого провайдера. 2) Клиент нажмёт кнопку «Оплатить» в форме оформления заказа —
+              ссылка откроется в новом окне Telegram. 3) После перевода он вернётся и прикрепит чек, как и раньше.
+            </CardDescription>
+          </CardHeader>
+        </Card>
       </AdminPageLayout>
     </>
   );

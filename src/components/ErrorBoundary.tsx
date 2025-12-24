@@ -2,7 +2,7 @@
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 interface Props {
   children: ReactNode;
@@ -55,12 +55,14 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-background">
           <div className="max-w-md w-full space-y-4">
-            <Alert variant="destructive">
-              <AlertTitle>Произошла ошибка</AlertTitle>
-              <AlertDescription>
-                {this.state.error?.message || 'Неожиданная ошибка приложения'}
-              </AlertDescription>
-            </Alert>
+            <Card className="border-destructive/50 bg-destructive/10">
+              <CardHeader>
+                <CardTitle className="text-destructive">Произошла ошибка</CardTitle>
+                <CardDescription className="text-destructive/80">
+                  {this.state.error?.message || 'Неожиданная ошибка приложения'}
+                </CardDescription>
+              </CardHeader>
+            </Card>
             <div className="flex gap-2">
               <Button onClick={this.handleReset} className="flex-1">
                 Перезагрузить страницу

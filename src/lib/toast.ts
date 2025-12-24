@@ -2,15 +2,13 @@
 // чтобы фронт продолжал работать даже без sonner.
 // В проде можно вернуть sonner, но сейчас важно убрать рантайм-ошибку.
 const log = (prefix: string, message: string) => {
-  // Убираем console.log в production для производительности
+  // Логируем в консоль для отладки
   if (process.env.NODE_ENV === 'development') {
     console.log(prefix, message);
   }
-  if (typeof window !== "undefined" && window?.alert) {
-    // Не спамим алертами — показываем только ошибки/варнинги
-    if (prefix === "❌" || prefix === "⚠️") {
-      window.alert(`${prefix} ${message}`);
-    }
+  // В production можно интегрировать с системой мониторинга
+  if (process.env.NODE_ENV === 'production') {
+    // Можно отправить в Sentry, LogRocket и т.д.
   }
 };
 

@@ -62,9 +62,9 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Используем только файлы page.tsx/page.ts в app/ директории
+  // Убираем pageExtensions - Next.js App Router автоматически распознает все нужные файлы
   // Компоненты страниц находятся в src/components/page-components, чтобы Next.js не искал их как Pages Router
-  pageExtensions: ['page.tsx', 'page.ts'],
+  // App Router использует файловую систему маршрутизацию и не требует pageExtensions
   // Production output для интеграции с FastAPI
   output: 'standalone',
 };

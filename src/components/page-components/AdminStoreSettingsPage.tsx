@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/api';
 import { toast } from '@/lib/toast';
@@ -127,16 +127,18 @@ export const AdminStoreSettingsPage = () => {
 
             {status && (
               <section aria-label="Текущий статус магазина">
-                <Alert>
-                  <AlertTitle>Текущий статус</AlertTitle>
-                  <AlertDescription>
-                    {status.is_sleep_mode
-                      ? `Магазин закрыт. Сообщение: ${status.sleep_message || 'используется текст по умолчанию'}.`
-                      : (
-                      'Магазин принимает заказы.'
-                    )}
-                  </AlertDescription>
-                </Alert>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Текущий статус</CardTitle>
+                    <CardDescription>
+                      {status.is_sleep_mode
+                        ? `Магазин закрыт. Сообщение: ${status.sleep_message || 'используется текст по умолчанию'}.`
+                        : (
+                        'Магазин принимает заказы.'
+                      )}
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
               </section>
             )}
           </>

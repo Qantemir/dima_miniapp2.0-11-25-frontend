@@ -10,7 +10,7 @@ import { api } from '@/lib/api';
 import { getUserId, isAdmin } from '@/lib/telegram';
 import { toast } from '@/lib/toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAdminView } from '@/contexts/AdminViewContext';
 import { ADMIN_IDS, type Cart } from '@/types/api';
 import { Seo } from '@/components/Seo';
@@ -274,12 +274,14 @@ export const CatalogPage = () => {
 
       {storeStatus?.is_sleep_mode && (
         <section className="p-4" aria-label="Статус магазина">
-          <Alert>
-            <AlertTitle>Магазин временно не работает</AlertTitle>
-            <AlertDescription>
-              {storeStatus.sleep_message || 'Мы временно не принимаем заказы. Возвращайтесь позже!'}
-            </AlertDescription>
-          </Alert>
+          <Card className="border-destructive/50 bg-destructive/10">
+            <CardHeader>
+              <CardTitle className="text-destructive">Магазин временно не работает</CardTitle>
+              <CardDescription className="text-destructive/80">
+                {storeStatus.sleep_message || 'Мы временно не принимаем заказы. Возвращайтесь позже!'}
+              </CardDescription>
+            </CardHeader>
+          </Card>
         </section>
       )}
 
