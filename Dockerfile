@@ -12,6 +12,9 @@ RUN yarn install
 # Копируем исходники
 COPY . .
 
+# Очищаем кэш Next.js перед сборкой (на случай если есть старые файлы)
+RUN rm -rf .next node_modules/.cache
+
 # Собираем Next.js приложение
 RUN yarn build
 
