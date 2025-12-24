@@ -181,17 +181,30 @@ export interface ApiError {
 const getEnvVar = (key: string, defaultValue: string = ''): string => {
   // В Next.js для клиентских переменных используем NEXT_PUBLIC_ префикс
   const nextPublicKey = `NEXT_PUBLIC_${key}`;
-  const value = process.env[nextPublicKey] || process.env[key] || defaultValue;
+  
+  // Пробуем разные варианты чтения переменной
+  const value = 
+    process.env[nextPublicKey] || 
+    process.env[key] || 
+    (typeof window !== 'undefined' && (window as any).__NEXT_DATA__?.env?.[nextPublicKey]) ||
+    defaultValue;
+  
   return String(value).trim();
 };
 
+// Прямое чтение переменной для отладки
+const directNextPublicApiUrl = process.env.NEXT_PUBLIC_VITE_API_URL;
+const directViteApiUrl = process.env.VITE_API_URL;
 const rawApiUrl = getEnvVar('VITE_API_URL', '/api').replace(/^["']|["']$/g, '');
 
-// Логируем для отладки (только на клиенте, не на сервере)
+// Логируем ВСЕГДА для отладки (и на клиенте, и на сервере)
+console.log('[API Config] ===== Настройка API URL =====');
+console.log('[API Config] process.env.NEXT_PUBLIC_VITE_API_URL:', directNextPublicApiUrl || '(не установлен)');
+console.log('[API Config] process.env.VITE_API_URL:', directViteApiUrl || '(не установлен)');
+console.log('[API Config] getEnvVar("VITE_API_URL"):', rawApiUrl);
+console.log('[API Config] typeof window:', typeof window);
 if (typeof window !== 'undefined') {
-  console.log('[API Config] NEXT_PUBLIC_VITE_API_URL:', process.env.NEXT_PUBLIC_VITE_API_URL);
-  console.log('[API Config] VITE_API_URL:', process.env.VITE_API_URL);
-  console.log('[API Config] rawApiUrl:', rawApiUrl);
+  console.log('[API Config] window.location.origin:', window.location.origin);
 }
 
 const normalizeApiBaseUrl = (value: string) => {
@@ -219,9 +232,20 @@ if (!apiBaseUrl.endsWith('/api')) {
   apiBaseUrl = apiBaseUrl.replace(/\/$/, '') + '/api';
 }
 
-// Логируем финальный API_BASE_URL
-if (typeof window !== 'undefined') {
-  console.log('[API Config] Финальный API_BASE_URL:', apiBaseUrl);
+// Логируем финальный API_BASE_URL ВСЕГДА
+console.log('[API Config] ✅ Финальный API_BASE_URL:', apiBaseUrl);
+
+// ВАЖНО: Если используется относительный путь '/api', но мы в production на Railway,
+// это означает, что переменная NEXT_PUBLIC_VITE_API_URL не установлена!
+if (apiBaseUrl === '/api' && typeof window !== 'undefined') {
+  const isProduction = window.location.hostname.includes('railway.app') || 
+                       window.location.hostname.includes('vercel.app') ||
+                       process.env.NODE_ENV === 'production';
+  if (isProduction) {
+    console.error('[API Config] ❌ КРИТИЧЕСКАЯ ОШИБКА: Используется относительный путь /api в production!');
+    console.error('[API Config] ❌ Установите NEXT_PUBLIC_VITE_API_URL в Railway!');
+    console.error('[API Config] ❌ Пример: NEXT_PUBLIC_VITE_API_URL=https://your-backend.up.railway.app/api');
+  }
 }
 
 export const API_BASE_URL = apiBaseUrl;

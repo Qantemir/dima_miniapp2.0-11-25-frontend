@@ -10,8 +10,12 @@ const nextConfig = {
     unoptimized: true, // Отключаем оптимизацию для статики
   },
   // Переменные окружения для клиентской стороны (с префиксом NEXT_PUBLIC_)
+  // ВАЖНО: Эти переменные инжектируются во время сборки, не во время выполнения!
+  // Убедитесь, что NEXT_PUBLIC_VITE_API_URL установлена в Railway ДО сборки
   env: {
-    NEXT_PUBLIC_VITE_API_URL: process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL || '/api',
+    // Читаем переменную напрямую - если не установлена, будет undefined
+    // Код в src/types/api.ts будет использовать fallback '/api' только если переменная действительно не установлена
+    NEXT_PUBLIC_VITE_API_URL: process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL || undefined,
     NEXT_PUBLIC_VITE_PUBLIC_URL: process.env.NEXT_PUBLIC_VITE_PUBLIC_URL || process.env.VITE_PUBLIC_URL || process.env.RAILWAY_PUBLIC_DOMAIN || 'http://localhost:3000',
     NEXT_PUBLIC_VITE_ADMIN_IDS: process.env.NEXT_PUBLIC_VITE_ADMIN_IDS || process.env.VITE_ADMIN_IDS || '',
   },
