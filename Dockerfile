@@ -24,7 +24,8 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV NEXT_PUBLIC_VITE_API_URL=/api
+# NEXT_PUBLIC_VITE_API_URL должен быть установлен через переменные окружения Railway
+# Не устанавливаем дефолтное значение здесь, чтобы не перезаписывать переменные из Railway
 # Next.js standalone server будет использовать PORT из окружения Railway
 # HOSTNAME=0.0.0.0 позволяет слушать на всех интерфейсах (важно для Docker/Railway)
 

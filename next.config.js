@@ -22,6 +22,12 @@ const nextConfig = {
     const backendUrl = process.env.BACKEND_URL || process.env.RAILWAY_SERVICE_URL;
     const apiUrl = process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL;
     
+    // Логируем для отладки (только в development)
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[Next.js rewrites] BACKEND_URL:', backendUrl);
+      console.log('[Next.js rewrites] NEXT_PUBLIC_VITE_API_URL:', apiUrl);
+    }
+    
     // Если apiUrl указан и это полный URL (начинается с http:// или https://), 
     // НЕ используем rewrites - клиент будет делать запросы напрямую
     // Это важно для разных сервисов на Railway
@@ -32,6 +38,9 @@ const nextConfig = {
       // Если это полный URL или голый домен (не относительный путь)
       if (normalizedApiUrl.startsWith('http://') || normalizedApiUrl.startsWith('https://')) {
         // Полный URL - не используем rewrites, клиент будет делать запросы напрямую
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[Next.js rewrites] Отключаем rewrites - используется полный URL:', normalizedApiUrl);
+        }
         return [];
       }
       
@@ -39,6 +48,9 @@ const nextConfig = {
       // Next.js rewrites не могут проксировать на внешние URL между контейнерами
       // Поэтому отключаем rewrites - клиент будет использовать полный URL
       if (!normalizedApiUrl.startsWith('/')) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[Next.js rewrites] Отключаем rewrites - внешний URL (голый домен):', normalizedApiUrl);
+        }
         return [];
       }
     }
@@ -57,6 +69,10 @@ const nextConfig = {
       // Убираем /api из конца если есть, так как мы добавим его в destination
       destination = destination.replace(/\/api\/?$/, '').replace(/\/$/, '');
       
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[Next.js rewrites] Используем BACKEND_URL для проксирования:', destination);
+      }
+      
       return [
         {
           source: '/api/:path*',
@@ -69,6 +85,13 @@ const nextConfig = {
     // В production (Railway/Docker) FastAPI использует PORT из окружения или 8080
     // Next.js проксирует /api запросы на FastAPI
     // ВАЖНО: Это работает только если фронтенд и бэкенд в одном контейнере
+    // ВНИМАНИЕ: Если мы попали сюда, значит переменные окружения не установлены правильно!
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[Next.js rewrites] ВНИМАНИЕ: Используется fallback на localhost:8080. Проверьте переменные окружения!');
+      console.warn('[Next.js rewrites] NEXT_PUBLIC_VITE_API_URL:', apiUrl);
+      console.warn('[Next.js rewrites] BACKEND_URL:', backendUrl);
+    }
+    
     const backendPort = process.env.PORT || process.env.BACKEND_PORT || '8080';
     return [
       {
