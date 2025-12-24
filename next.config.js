@@ -18,60 +18,56 @@ const nextConfig = {
   // Настройка для API прокси
   async rewrites() {
     // В production на Railway фронтенд и бэкенд - разные сервисы
-    // Используем переменную окружения BACKEND_URL для бэкенда
+    // ВАЖНО: rewrites() выполняется во время сборки, но переменные окружения из Railway
+    // доступны только во время выполнения. Поэтому мы всегда отключаем rewrites для внешних URL.
+    
     const backendUrl = process.env.BACKEND_URL || process.env.RAILWAY_SERVICE_URL;
     const apiUrl = process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL;
     
-    // Логируем для отладки (только в development)
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[Next.js rewrites] BACKEND_URL:', backendUrl);
-      console.log('[Next.js rewrites] NEXT_PUBLIC_VITE_API_URL:', apiUrl);
-    }
+    // Логируем ВСЕГДА для отладки (включая production)
+    console.log('[Next.js rewrites] Проверка переменных окружения:');
+    console.log('[Next.js rewrites] BACKEND_URL:', backendUrl || '(не установлен)');
+    console.log('[Next.js rewrites] NEXT_PUBLIC_VITE_API_URL:', apiUrl || '(не установлен)');
+    console.log('[Next.js rewrites] NODE_ENV:', process.env.NODE_ENV);
     
-    // Если apiUrl указан и это полный URL (начинается с http:// или https://), 
-    // НЕ используем rewrites - клиент будет делать запросы напрямую
-    // Это важно для разных сервисов на Railway
+    // КРИТИЧЕСКИ ВАЖНО: Если apiUrl указан и это НЕ относительный путь (не начинается с /),
+    // значит это внешний URL. Next.js rewrites НЕ МОГУТ проксировать на внешние URL между контейнерами.
+    // ОТКЛЮЧАЕМ rewrites полностью - клиент будет использовать полный URL напрямую.
     if (apiUrl) {
       let normalizedApiUrl = String(apiUrl).trim();
       normalizedApiUrl = normalizedApiUrl.replace(/^["']|["']$/g, '');
       
-      // Если это полный URL или голый домен (не относительный путь)
+      console.log('[Next.js rewrites] Нормализованный apiUrl:', normalizedApiUrl);
+      
+      // Если это полный URL (начинается с http:// или https://)
       if (normalizedApiUrl.startsWith('http://') || normalizedApiUrl.startsWith('https://')) {
-        // Полный URL - не используем rewrites, клиент будет делать запросы напрямую
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('[Next.js rewrites] Отключаем rewrites - используется полный URL:', normalizedApiUrl);
-        }
+        console.log('[Next.js rewrites] ✅ Отключаем rewrites - используется полный URL:', normalizedApiUrl);
         return [];
       }
       
       // Если это голый домен (не начинается с /), значит это внешний URL
-      // Next.js rewrites не могут проксировать на внешние URL между контейнерами
-      // Поэтому отключаем rewrites - клиент будет использовать полный URL
+      // ОТКЛЮЧАЕМ rewrites - клиент будет использовать полный URL
       if (!normalizedApiUrl.startsWith('/')) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('[Next.js rewrites] Отключаем rewrites - внешний URL (голый домен):', normalizedApiUrl);
-        }
+        console.log('[Next.js rewrites] ✅ Отключаем rewrites - внешний URL (голый домен):', normalizedApiUrl);
         return [];
       }
+      
+      // Если это относительный путь (/api), проверяем BACKEND_URL
+      console.log('[Next.js rewrites] apiUrl - относительный путь:', normalizedApiUrl);
     }
     
-    // Если указан BACKEND_URL, используем его для проксирования (только для внутренних URL)
+    // Если указан BACKEND_URL, используем его для проксирования
     if (backendUrl) {
       let destination = String(backendUrl).trim();
-      // Убираем кавычки если есть
       destination = destination.replace(/^["']|["']$/g, '');
       
-      // Если это не полный URL (нет протокола), добавляем https://
       if (!destination.startsWith('http://') && !destination.startsWith('https://')) {
         destination = `https://${destination}`;
       }
       
-      // Убираем /api из конца если есть, так как мы добавим его в destination
       destination = destination.replace(/\/api\/?$/, '').replace(/\/$/, '');
       
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('[Next.js rewrites] Используем BACKEND_URL для проксирования:', destination);
-      }
+      console.log('[Next.js rewrites] ✅ Используем BACKEND_URL для проксирования:', destination);
       
       return [
         {
@@ -81,24 +77,19 @@ const nextConfig = {
       ];
     }
     
-    // Если это относительный путь или не указан, используем внутренний прокси (для одного сервиса)
-    // В production (Railway/Docker) FastAPI использует PORT из окружения или 8080
-    // Next.js проксирует /api запросы на FastAPI
-    // ВАЖНО: Это работает только если фронтенд и бэкенд в одном контейнере
-    // ВНИМАНИЕ: Если мы попали сюда, значит переменные окружения не установлены правильно!
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn('[Next.js rewrites] ВНИМАНИЕ: Используется fallback на localhost:8080. Проверьте переменные окружения!');
-      console.warn('[Next.js rewrites] NEXT_PUBLIC_VITE_API_URL:', apiUrl);
-      console.warn('[Next.js rewrites] BACKEND_URL:', backendUrl);
-    }
+    // FALLBACK: Если мы попали сюда, значит переменные окружения не установлены правильно
+    // В production на Railway это НЕ должно происходить!
+    // ВАЖНО: На Railway фронтенд и бэкенд - разные сервисы, поэтому НЕ используем localhost
+    // Отключаем rewrites полностью - клиент будет использовать API_BASE_URL напрямую
+    console.error('[Next.js rewrites] ❌ ОШИБКА: Переменные окружения не установлены!');
+    console.error('[Next.js rewrites] ❌ NEXT_PUBLIC_VITE_API_URL:', apiUrl || '(не установлен)');
+    console.error('[Next.js rewrites] ❌ BACKEND_URL:', backendUrl || '(не установлен)');
+    console.error('[Next.js rewrites] ❌ Все переменные окружения:', Object.keys(process.env).filter(k => k.includes('API') || k.includes('BACKEND') || k.includes('RAILWAY')).join(', '));
+    console.error('[Next.js rewrites] ⚠️ Отключаем rewrites - клиент будет использовать API_BASE_URL из src/types/api.ts');
     
-    const backendPort = process.env.PORT || process.env.BACKEND_PORT || '8080';
-    return [
-      {
-        source: '/api/:path*',
-        destination: `http://localhost:${backendPort}/api/:path*`,
-      },
-    ];
+    // НЕ возвращаем localhost - отключаем rewrites полностью
+    // Клиент будет использовать API_BASE_URL, который формируется из NEXT_PUBLIC_VITE_API_URL
+    return [];
   },
   // Оптимизация сборки
   compiler: {
