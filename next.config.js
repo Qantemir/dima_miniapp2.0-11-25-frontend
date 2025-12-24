@@ -18,26 +18,18 @@ const nextConfig = {
   // Настройка для API прокси
   async rewrites() {
     // В production на Railway фронтенд и бэкенд - разные сервисы
-    // ВАЖНО: rewrites() выполняется во время сборки, но переменные окружения из Railway
-    // доступны только во время выполнения. Поэтому мы всегда отключаем rewrites для внешних URL.
-    
-    const backendUrl = process.env.BACKEND_URL || process.env.RAILWAY_SERVICE_URL;
+    // Используем только NEXT_PUBLIC_VITE_API_URL - это единственная переменная, которая нужна
     const apiUrl = process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL;
     
-    // Логируем ВСЕГДА для отладки (включая production)
-    console.log('[Next.js rewrites] Проверка переменных окружения:');
-    console.log('[Next.js rewrites] BACKEND_URL:', backendUrl || '(не установлен)');
+    // Логируем для отладки
     console.log('[Next.js rewrites] NEXT_PUBLIC_VITE_API_URL:', apiUrl || '(не установлен)');
-    console.log('[Next.js rewrites] NODE_ENV:', process.env.NODE_ENV);
     
-    // КРИТИЧЕСКИ ВАЖНО: Если apiUrl указан и это НЕ относительный путь (не начинается с /),
+    // Если apiUrl указан и это НЕ относительный путь (не начинается с /),
     // значит это внешний URL. Next.js rewrites НЕ МОГУТ проксировать на внешние URL между контейнерами.
     // ОТКЛЮЧАЕМ rewrites полностью - клиент будет использовать полный URL напрямую.
     if (apiUrl) {
       let normalizedApiUrl = String(apiUrl).trim();
       normalizedApiUrl = normalizedApiUrl.replace(/^["']|["']$/g, '');
-      
-      console.log('[Next.js rewrites] Нормализованный apiUrl:', normalizedApiUrl);
       
       // Если это полный URL (начинается с http:// или https://)
       if (normalizedApiUrl.startsWith('http://') || normalizedApiUrl.startsWith('https://')) {
@@ -52,43 +44,21 @@ const nextConfig = {
         return [];
       }
       
-      // Если это относительный путь (/api), проверяем BACKEND_URL
-      console.log('[Next.js rewrites] apiUrl - относительный путь:', normalizedApiUrl);
-    }
-    
-    // Если указан BACKEND_URL, используем его для проксирования
-    if (backendUrl) {
-      let destination = String(backendUrl).trim();
-      destination = destination.replace(/^["']|["']$/g, '');
-      
-      if (!destination.startsWith('http://') && !destination.startsWith('https://')) {
-        destination = `https://${destination}`;
-      }
-      
-      destination = destination.replace(/\/api\/?$/, '').replace(/\/$/, '');
-      
-      console.log('[Next.js rewrites] ✅ Используем BACKEND_URL для проксирования:', destination);
-      
+      // Если это относительный путь (/api), значит фронтенд и бэкенд в одном контейнере
+      // Используем внутренний прокси на localhost
+      console.log('[Next.js rewrites] Используем внутренний прокси для относительного пути:', normalizedApiUrl);
+      const backendPort = process.env.PORT || process.env.BACKEND_PORT || '8080';
       return [
         {
           source: '/api/:path*',
-          destination: `${destination}/api/:path*`,
+          destination: `http://localhost:${backendPort}/api/:path*`,
         },
       ];
     }
     
-    // FALLBACK: Если мы попали сюда, значит переменные окружения не установлены правильно
-    // В production на Railway это НЕ должно происходить!
-    // ВАЖНО: На Railway фронтенд и бэкенд - разные сервисы, поэтому НЕ используем localhost
-    // Отключаем rewrites полностью - клиент будет использовать API_BASE_URL напрямую
-    console.error('[Next.js rewrites] ❌ ОШИБКА: Переменные окружения не установлены!');
-    console.error('[Next.js rewrites] ❌ NEXT_PUBLIC_VITE_API_URL:', apiUrl || '(не установлен)');
-    console.error('[Next.js rewrites] ❌ BACKEND_URL:', backendUrl || '(не установлен)');
-    console.error('[Next.js rewrites] ❌ Все переменные окружения:', Object.keys(process.env).filter(k => k.includes('API') || k.includes('BACKEND') || k.includes('RAILWAY')).join(', '));
-    console.error('[Next.js rewrites] ⚠️ Отключаем rewrites - клиент будет использовать API_BASE_URL из src/types/api.ts');
-    
-    // НЕ возвращаем localhost - отключаем rewrites полностью
-    // Клиент будет использовать API_BASE_URL, который формируется из NEXT_PUBLIC_VITE_API_URL
+    // FALLBACK: Если переменная не установлена, отключаем rewrites
+    // Клиент будет использовать API_BASE_URL из src/types/api.ts (который будет '/api' по умолчанию)
+    console.warn('[Next.js rewrites] ⚠️ NEXT_PUBLIC_VITE_API_URL не установлен, отключаем rewrites');
     return [];
   },
   // Оптимизация сборки

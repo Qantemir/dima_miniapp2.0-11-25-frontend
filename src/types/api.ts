@@ -187,6 +187,13 @@ const getEnvVar = (key: string, defaultValue: string = ''): string => {
 
 const rawApiUrl = getEnvVar('VITE_API_URL', '/api').replace(/^["']|["']$/g, '');
 
+// Логируем для отладки (только на клиенте, не на сервере)
+if (typeof window !== 'undefined') {
+  console.log('[API Config] NEXT_PUBLIC_VITE_API_URL:', process.env.NEXT_PUBLIC_VITE_API_URL);
+  console.log('[API Config] VITE_API_URL:', process.env.VITE_API_URL);
+  console.log('[API Config] rawApiUrl:', rawApiUrl);
+}
+
 const normalizeApiBaseUrl = (value: string) => {
   if (!value) return '/api';
   // Убираем кавычки, если есть
@@ -210,6 +217,11 @@ let apiBaseUrl = normalizeApiBaseUrl(rawApiUrl)
 
 if (!apiBaseUrl.endsWith('/api')) {
   apiBaseUrl = apiBaseUrl.replace(/\/$/, '') + '/api';
+}
+
+// Логируем финальный API_BASE_URL
+if (typeof window !== 'undefined') {
+  console.log('[API Config] Финальный API_BASE_URL:', apiBaseUrl);
 }
 
 export const API_BASE_URL = apiBaseUrl;
