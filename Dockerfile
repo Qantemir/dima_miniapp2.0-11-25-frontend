@@ -25,6 +25,8 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_PUBLIC_VITE_API_URL=/api
+# Next.js standalone server будет использовать PORT из окружения Railway
+# HOSTNAME=0.0.0.0 позволяет слушать на всех интерфейсах (важно для Docker/Railway)
 
 # Копируем собранное приложение
 COPY --from=builder /app/public ./public
@@ -32,8 +34,8 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
 # Запускаем Next.js standalone server
-EXPOSE 3000
-ENV PORT=3000
+# Railway устанавливает PORT автоматически, не переопределяем
+EXPOSE 8080
 
 CMD ["node", "server.js"]
 
