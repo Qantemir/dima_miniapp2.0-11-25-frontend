@@ -34,6 +34,8 @@ const nextConfig = {
     // Для ADMIN_IDS не используем пустую строку как fallback, чтобы можно было определить отсутствие переменной
     // Если переменная не установлена, будет undefined, что позволит getEnvVar правильно обработать ситуацию
     NEXT_PUBLIC_VITE_ADMIN_IDS: process.env.NEXT_PUBLIC_VITE_ADMIN_IDS || process.env.VITE_ADMIN_IDS || undefined,
+    // Ссылка на оплату (Kaspi Pay или другой платёжный сервис)
+    NEXT_PUBLIC_PAYMENT_LINK: process.env.NEXT_PUBLIC_PAYMENT_LINK || undefined,
   },
   // Настройка для API прокси
   async rewrites() {

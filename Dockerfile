@@ -14,6 +14,7 @@ ARG VITE_PUBLIC_URL
 ARG RAILWAY_PUBLIC_DOMAIN
 ARG NEXT_PUBLIC_VITE_ADMIN_IDS
 ARG VITE_ADMIN_IDS
+ARG NEXT_PUBLIC_PAYMENT_LINK
 
 # Устанавливаем переменные окружения из ARG для использования во время сборки
 # Используем значение из NEXT_PUBLIC_* или альтернативное имя (аналогично next.config.js)
@@ -28,6 +29,8 @@ ENV RAILWAY_PUBLIC_DOMAIN=$RAILWAY_PUBLIC_DOMAIN
 # Admin IDs: поддерживаем NEXT_PUBLIC_VITE_ADMIN_IDS > VITE_ADMIN_IDS
 ENV NEXT_PUBLIC_VITE_ADMIN_IDS=$NEXT_PUBLIC_VITE_ADMIN_IDS
 ENV VITE_ADMIN_IDS=$VITE_ADMIN_IDS
+# Payment Link
+ENV NEXT_PUBLIC_PAYMENT_LINK=$NEXT_PUBLIC_PAYMENT_LINK
 
 # Копируем package.json и yarn.lock
 COPY package.json yarn.lock ./

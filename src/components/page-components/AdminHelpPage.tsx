@@ -5,7 +5,7 @@ import { AdminPageLayout } from '@/components/AdminPageLayout';
 import { Seo } from '@/components/Seo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LifeBuoy, Package, Boxes, Megaphone, Moon, AlertTriangle, CreditCard } from '@/components/icons';
+import { LifeBuoy, Package, Boxes, Megaphone, Moon, AlertTriangle } from '@/components/icons';
 import { useAdminGuard } from '@/hooks/useAdminGuard';
 
 const QUICK_LINKS = [
@@ -32,12 +32,6 @@ const QUICK_LINKS = [
     description: 'Временно приостановите приём заказов. Укажите причину и время возвращения — клиенты увидят это сообщение вместо каталога.',
     to: '/admin/store',
     icon: Moon,
-  },
-  {
-    label: 'Подключение оплаты',
-    description: 'Настройте ссылку на Kaspi Pay или другой платёжный сервис. Ссылка будет показана клиентам при оформлении заказа.',
-    to: '/admin/payments',
-    icon: CreditCard,
   },
 ];
 

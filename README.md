@@ -111,7 +111,6 @@ await api.createOrder({ ... });
   - `/admin/catalog` - Управление каталогом
   - `/admin/store` - Настройки магазина
   - `/admin/broadcast` - Рассылка
-  - `/admin/payments` - Настройки оплаты
 
 ## Production развертывание
 

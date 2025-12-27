@@ -2,6 +2,7 @@ import { memo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Trash2, Plus, Minus } from '@/components/icons';
 import { Button } from '@/components/ui/button';
+import { getProductImageUrl } from '@/lib/api';
 import type { CartItem as CartItemType } from '@/types/api';
 
 interface CartItemProps {
@@ -40,7 +41,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }: CartItemProps) => {
       {item.image && (
         <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0 border border-border/50">
           <img
-            src={item.image}
+            src={getProductImageUrl(item.image) || ''}
             alt={item.product_name}
             className="w-full h-full object-cover"
             loading="lazy"

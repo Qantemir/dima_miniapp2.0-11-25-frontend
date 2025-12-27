@@ -6,7 +6,7 @@ import { ShoppingCart, CheckCircle2, Package, HelpCircle, ShieldCheck } from '@/
 import { Button } from '@/components/ui/button';
 import { MemoizedProductCard as ProductCard } from '@/components/ProductCard';
 import { CartDialog } from '@/components/CartDialog';
-import { api } from '@/lib/api';
+import { api, getProductImageUrl } from '@/lib/api';
 import { getUserId, isAdmin } from '@/lib/telegram';
 import { toast } from '@/lib/toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -67,7 +67,7 @@ export const CatalogPage = () => {
         "@type": "Product",
         name: product.name,
         description: product.description?.substring(0, 150), // Ограничиваем описание
-        image: product.images?.[0] || product.image,
+        image: getProductImageUrl(product.images?.[0] || product.image),
         offers: {
           "@type": "Offer",
           priceCurrency: "KZT",

@@ -4,6 +4,7 @@ import { Plus, Minus } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { HoverScale } from '@/components/animations';
+import { getProductImageUrl } from '@/lib/api';
 import type { Product, ProductVariant } from '@/types/api';
 
 interface ProductCardProps {
@@ -30,7 +31,8 @@ export const ProductCard = ({
 
   const hasVariants = product.variants && product.variants.length > 0;
   const mustSelectVariant = !selectedVariant;
-  const displayImage = product.images?.[0] ?? product.image;
+  const imageSource = product.images?.[0] ?? product.image;
+  const displayImage = getProductImageUrl(imageSource);
   
   // Товар без вариаций не может быть продан
   if (!hasVariants) {
