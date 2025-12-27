@@ -4,13 +4,14 @@ import { useEffect, useRef, useState } from 'react';
 import { Moon } from '@/components/icons';
 import { AdminPageLayout } from '@/components/AdminPageLayout';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/api';
 import { toast } from '@/lib/toast';
+import { cn } from '@/lib/utils';
 import { Seo } from '@/components/Seo';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAdminGuard } from '@/hooks/useAdminGuard';
@@ -126,22 +127,30 @@ export const AdminStoreSettingsPage = () => {
               </Card>
             </section>
 
-            {status && (
-              <section aria-label="Текущий статус магазина">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Текущий статус</CardTitle>
-                    <CardDescription>
-                      {status.is_sleep_mode
-                        ? `Магазин закрыт. Сообщение: ${status.sleep_message || 'используется текст по умолчанию'}.`
-                        : (
-                        'Магазин принимает заказы.'
-                      )}
-                    </CardDescription>
-                  </CardHeader>
-                </Card>
-              </section>
-            )}
+            <section aria-label="Текущий статус магазина">
+              <Card className="border border-border bg-card p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {sleepEnabled ? 'Магазин закрыт' : 'Магазин открыт'}
+                    </p>
+                    {sleepEnabled && (
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                        {message || 'Используется текст по умолчанию'}
+                      </p>
+                    )}
+                  </div>
+                  <div className={cn(
+                    "flex-shrink-0 px-2 py-1 rounded-md text-xs font-medium transition-colors",
+                    sleepEnabled 
+                      ? "bg-muted text-muted-foreground" 
+                      : "bg-success/10 text-success"
+                  )}>
+                    {sleepEnabled ? 'Закрыт' : 'Открыт'}
+                  </div>
+                </div>
+              </Card>
+            </section>
           </>
         )}
       </AdminPageLayout>
