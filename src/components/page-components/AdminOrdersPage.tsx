@@ -16,11 +16,8 @@ import { useAdminGuard } from '@/hooks/useAdminGuard';
 
 const STATUS_FILTERS: Array<{ value: OrderStatus | 'all'; label: string }> = [
   { value: 'all', label: 'Все' },
-  { value: 'в обработке', label: 'В работе' },
   { value: 'принят', label: 'Принятые' },
-  { value: 'выехал', label: 'Выехали' },
-  { value: 'завершён', label: 'Завершённые' },
-  { value: 'отменён', label: 'Отменённые' },
+  { value: 'отказано', label: 'Отказанные' },
 ];
 
 export const AdminOrdersPage = () => {
@@ -39,12 +36,9 @@ export const AdminOrdersPage = () => {
   } = useInfiniteQuery({
     queryKey: ['admin-orders', selectedStatus],
     queryFn: ({ pageParam }) => {
-      const params: { status?: string; cursor?: string; includeDeleted?: boolean } = {};
+      const params: { status?: string; cursor?: string } = {};
       if (selectedStatus !== 'all') params.status = selectedStatus;
       if (pageParam) params.cursor = pageParam as string;
-      if (selectedStatus === 'завершён') {
-        params.includeDeleted = true;
-      }
       return api.getOrders(params);
     },
     getNextPageParam: lastPage => lastPage.next_cursor ?? undefined,

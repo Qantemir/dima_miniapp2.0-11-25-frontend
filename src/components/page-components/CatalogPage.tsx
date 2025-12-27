@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useNavigate } from '@/lib/router';
-import { ShoppingCart, CheckCircle2, Package, HelpCircle, ShieldCheck, ClipboardList } from '@/components/icons';
+import { ShoppingCart, CheckCircle2, Package, HelpCircle, ShieldCheck } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { MemoizedProductCard as ProductCard } from '@/components/ProductCard';
 import { CartDialog } from '@/components/CartDialog';
@@ -137,7 +137,6 @@ export const CatalogPage = () => {
 
   const handleHelp = useCallback(() => setHelpDialogOpen(true), []);
   
-  const handleNavigateToOrder = useCallback(() => navigate('/order'), [navigate]);
   const handleOpenCart = useCallback(() => setCartDialogOpen(true), []);
   const handleSelectAllCategories = useCallback(() => setSelectedCategory(null), []);
   const handleSelectCategory = useCallback((categoryId: string) => setSelectedCategory(categoryId), []);
@@ -221,15 +220,6 @@ export const CatalogPage = () => {
                 <span className="hidden sm:inline text-sm font-medium">Админ-режим</span>
               </Button>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNavigateToOrder}
-              className="h-10 px-3 sm:px-4 rounded-lg"
-            >
-              <ClipboardList className="h-4 w-4 sm:mr-2 flex-shrink-0" />
-              <span className="hidden sm:inline text-sm font-medium">Мои заказы</span>
-            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -373,10 +363,9 @@ export const CatalogPage = () => {
             </section>
 
             <section>
-              <h3 className="text-sm font-semibold text-foreground">Корзина и редактирование</h3>
+              <h3 className="text-sm font-semibold text-foreground">Корзина</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Товары сохраняются между сессиями: вы можете закрыть мини‑приложение и продолжить позже. Количество и варианты меняются прямо в корзине,
-                а сведения о заказе можно отредактировать в разделе «Мои заказы», пока статус — «Новый» или «В обработке».
+                Товары сохраняются между сессиями: вы можете закрыть мини‑приложение и продолжить позже. Количество и варианты меняются прямо в корзине.
               </p>
             </section>
 
@@ -402,8 +391,7 @@ export const CatalogPage = () => {
             <section>
               <h3 className="text-sm font-semibold text-foreground">Статусы заказа</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Отправляем уведомления по мере обработки: «Новый» → «В обработке» → «Принят» → «Выехал» → «Завершён». Если появился статус «Отменён»,
-                откройте заказ — там будет причина и кнопка «Оформить заново».
+                Отправляем уведомления о статусе заказа: «Принят» — заказ принят и будет доставлен в течение 2 часов. Если заказ «Отказано» — вы получите уведомление с причиной отказа.
               </p>
             </section>
 
