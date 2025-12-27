@@ -47,9 +47,7 @@ export const AdminCatalogPage = () => {
     queryKey: ['admin-catalog'],
     queryFn: () => api.getAdminCatalog(),
     enabled: isAuthorized,
-    staleTime: 2 * 60 * 1000, // 2 минуты (вместо 0)
-    gcTime: 10 * 60 * 1000, // 10 минут кэш
-    // Используем настройки по умолчанию (refetchOnMount: false, refetchOnWindowFocus: false)
+    // Используем глобальные настройки (staleTime: 5 минут, refetchOnMount: false)
     // Данные обновятся при необходимости через инвалидацию после мутаций
   });
 
@@ -69,14 +67,17 @@ export const AdminCatalogPage = () => {
   };
 
   const handleCategorySubmit = async () => {
+    // Защита от двойного вызова
+    if (saving) {
+      return;
+    }
+
     const trimmedName = categoryForm.name?.trim();
     if (!trimmedName) {
       toast.warning('Укажите название категории');
       return;
     }
 
-    await queryClient.cancelQueries({ queryKey: ['admin-catalog'], exact: true });
-    await queryClient.cancelQueries({ queryKey: ['catalog'] });
     setSaving(true);
     
     // Оптимистичное обновление
@@ -172,18 +173,20 @@ export const AdminCatalogPage = () => {
         };
       });
       
+      // Инвалидируем кэш для других компонентов параллельно (быстрее)
+      // НЕ делаем refetch, так как данные уже обновлены через setQueryData выше
       const detailQueryKey = ['admin-category', createdOrUpdatedCategory.id];
-
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['admin-catalog'] }),
-        queryClient.invalidateQueries({ queryKey: ['catalog'] }),
+        queryClient.invalidateQueries({ 
+          queryKey: ['admin-catalog'],
+          refetchType: 'none' // Не делать автоматический refetch
+        }),
+        queryClient.invalidateQueries({ 
+          queryKey: ['catalog'],
+          refetchType: 'none' // Не делать автоматический refetch
+        }),
+        queryClient.removeQueries({ queryKey: detailQueryKey, exact: true }),
       ]);
-      
-      await Promise.all([
-        queryClient.refetchQueries({ queryKey: ['admin-catalog'], type: 'active' }),
-        queryClient.refetchQueries({ queryKey: ['catalog'], type: 'active' }),
-      ]);
-      queryClient.removeQueries({ queryKey: detailQueryKey, exact: true });
     } catch (error) {
       // Откатываем изменения при ошибке
       if (previousCatalog) {
@@ -220,8 +223,6 @@ export const AdminCatalogPage = () => {
 
   const confirmDeleteCategory = async () => {
     if (!categoryToDelete) return;
-    await queryClient.cancelQueries({ queryKey: ['admin-catalog'], exact: true });
-    await queryClient.cancelQueries({ queryKey: ['catalog'] });
     setDeleting(true);
     
     // Оптимистичное обновление - сразу удаляем категорию из UI
@@ -249,19 +250,20 @@ export const AdminCatalogPage = () => {
     try {
       await api.deleteCategory(deletedCategory.id);
       toast.success('Категория удалена');
-      // Инвалидируем для синхронизации с сервером в фоне
+      // Инвалидируем кэш для других компонентов параллельно (быстрее)
+      // Данные уже обновлены оптимистично выше, поэтому refetch не нужен
       const detailQueryKey = ['admin-category', deletedCategory.id];
-
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['admin-catalog'] }),
-        queryClient.invalidateQueries({ queryKey: ['catalog'] }),
+        queryClient.invalidateQueries({ 
+          queryKey: ['admin-catalog'],
+          refetchType: 'none' // Не делать автоматический refetch
+        }),
+        queryClient.invalidateQueries({ 
+          queryKey: ['catalog'],
+          refetchType: 'none' // Не делать автоматический refetch
+        }),
+        queryClient.removeQueries({ queryKey: detailQueryKey, exact: true }),
       ]);
-      
-      await Promise.all([
-        queryClient.refetchQueries({ queryKey: ['admin-catalog'], type: 'active' }),
-        queryClient.refetchQueries({ queryKey: ['catalog'], type: 'active' }),
-      ]);
-      queryClient.removeQueries({ queryKey: detailQueryKey, exact: true });
     } catch (error) {
       // Откатываем изменения при ошибке
       if (previousCatalog) {

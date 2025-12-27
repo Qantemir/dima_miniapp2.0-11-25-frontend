@@ -27,19 +27,6 @@ export default function HomePage() {
 
   const isUserAdmin = userId ? isAdmin(userId, ADMIN_IDS) : false;
 
-  // Отладочная информация в development
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development' && !checking) {
-      console.log('[Admin Check]', {
-        userId,
-        adminIds: ADMIN_IDS,
-        isUserAdmin,
-        forceClientView,
-        willRedirect: isUserAdmin && !forceClientView,
-      });
-    }
-  }, [checking, userId, isUserAdmin, forceClientView]);
-
   useEffect(() => {
     if (!checking && isUserAdmin && !forceClientView) {
       router.replace('/admin');

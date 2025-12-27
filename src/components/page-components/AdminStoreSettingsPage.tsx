@@ -84,17 +84,19 @@ export const AdminStoreSettingsPage = () => {
           <>
             <section aria-label="Управление режимом сна">
               <Card className="border border-border bg-card p-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-base font-semibold">Магазин в режиме сна</Label>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <Label className="text-base font-semibold block mb-1">Магазин в режиме сна</Label>
                     <p className="text-sm text-muted-foreground">
                       Клиенты увидят сообщение и не смогут оформить заказ
                     </p>
                   </div>
-                  <Switch
-                    checked={sleepEnabled}
-                    onCheckedChange={setSleepEnabled}
-                  />
+                  <div className="flex-shrink-0 pt-1">
+                    <Switch
+                      checked={sleepEnabled}
+                      onCheckedChange={setSleepEnabled}
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">

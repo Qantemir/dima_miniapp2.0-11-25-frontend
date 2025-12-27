@@ -53,9 +53,7 @@ function InitTelegram() {
           staleTime: 5 * 60 * 1000,
         });
       } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.debug('Prefetch error:', error);
-        }
+        // Ошибки prefetch не критичны, игнорируем
       }
     };
 

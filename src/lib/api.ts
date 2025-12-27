@@ -76,9 +76,14 @@ class ApiClient {
     const controller = new AbortController();
 
     try {
-      // Оптимизированные таймауты (кэшируем проверку больших запросов)
+      // Оптимизированные таймауты
       const isLargeRequest = endpoint.includes('/catalog') || endpoint.includes('/admin/orders');
-      const timeout = isLargeRequest ? 8_000 : 5_000;
+      const isBroadcastRequest = endpoint.includes('/admin/broadcast');
+      const isDeleteRequest = options?.method === 'DELETE';
+      // DELETE запросы обычно быстрые, используем меньший таймаут
+      // Большие запросы (каталог, заказы) требуют больше времени
+      // Рассылка может занимать много времени в зависимости от количества клиентов
+      const timeout = isBroadcastRequest ? 120_000 : isLargeRequest ? 8_000 : isDeleteRequest ? 3_000 : 5_000;
       timeoutId = setTimeout(() => controller.abort(), timeout);
 
       // Оптимизированная обработка заголовков

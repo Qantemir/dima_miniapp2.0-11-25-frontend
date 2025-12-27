@@ -1,10 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Package } from '@/components/icons';
 import { OrderStatusBadge } from '@/components/OrderStatusBadge';
-import type { Order } from '@/types/api';
+import type { OrderSummary } from '@/types/api';
 
 interface AdminOrderListProps {
-  orders: Order[];
+  orders: OrderSummary[];
   isFetching: boolean;
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
@@ -64,7 +64,7 @@ export const AdminOrderList = ({
 
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
             <span className="text-sm text-muted-foreground">
-              {(order.items || []).length} товаров
+              {order.items_count} товаров
             </span>
             <span className="font-bold text-foreground">{order.total_amount} ₸</span>
           </div>
