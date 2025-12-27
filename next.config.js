@@ -18,7 +18,19 @@ const nextConfig = {
     // Код в src/types/api.ts будет использовать fallback '/api' только если переменная действительно не установлена
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL || undefined,
     NEXT_PUBLIC_VITE_API_URL: process.env.NEXT_PUBLIC_VITE_API_URL || process.env.VITE_API_URL || undefined, // Для обратной совместимости
-    NEXT_PUBLIC_VITE_PUBLIC_URL: process.env.NEXT_PUBLIC_VITE_PUBLIC_URL || process.env.VITE_PUBLIC_URL || process.env.RAILWAY_PUBLIC_DOMAIN || 'http://localhost:3000',
+    // Нормализуем PUBLIC_URL - добавляем протокол если его нет (для RAILWAY_PUBLIC_DOMAIN)
+    NEXT_PUBLIC_VITE_PUBLIC_URL: (() => {
+      const url = process.env.NEXT_PUBLIC_VITE_PUBLIC_URL || process.env.VITE_PUBLIC_URL || process.env.RAILWAY_PUBLIC_DOMAIN;
+      if (!url) return 'http://localhost:3000';
+      const trimmed = url.trim();
+      if (!trimmed) return 'http://localhost:3000';
+      // Если уже есть протокол, возвращаем как есть
+      if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+        return trimmed;
+      }
+      // Если нет протокола, добавляем https://
+      return `https://${trimmed}`;
+    })(),
     // Для ADMIN_IDS не используем пустую строку как fallback, чтобы можно было определить отсутствие переменной
     // Если переменная не установлена, будет undefined, что позволит getEnvVar правильно обработать ситуацию
     NEXT_PUBLIC_VITE_ADMIN_IDS: process.env.NEXT_PUBLIC_VITE_ADMIN_IDS || process.env.VITE_ADMIN_IDS || undefined,

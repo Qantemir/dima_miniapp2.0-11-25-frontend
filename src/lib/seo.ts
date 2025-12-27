@@ -4,7 +4,14 @@ const trailingSlashRegex = /\/$/;
 
 const normalizeBaseUrl = (value?: string | null) => {
   if (!value) return "https://miniapp.local";
-  return value.replace(trailingSlashRegex, "");
+  const trimmed = value.trim();
+  if (!trimmed) return "https://miniapp.local";
+  // Если уже есть протокол, убираем trailing slash и возвращаем
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed.replace(trailingSlashRegex, "");
+  }
+  // Если нет протокола, добавляем https://
+  return `https://${trimmed.replace(trailingSlashRegex, "")}`;
 };
 
 export const siteConfig = {
