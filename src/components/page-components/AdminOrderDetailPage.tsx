@@ -10,20 +10,13 @@ import { AdminOrderStatusDialog } from '@/components/admin/orders/AdminOrderStat
 import { useAdminOrderDetail } from '@/hooks/useAdminOrderDetail';
 
 const AVAILABLE_STATUSES: OrderStatus[] = [
-  'в обработке',
   'принят',
-  'выехал',
-  'завершён',
-  'отменён',
+  'отказано',
 ];
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
-  'новый': 'В обработке', // Старые заказы со статусом "новый" показываем как "В обработке"
-  'в обработке': 'В обработке',
   'принят': 'Принят',
-  'выехал': 'Выехал',
-  'завершён': 'Завершён',
-  'отменён': 'Отменён',
+  'отказано': 'Отказано',
 };
 
 export const AdminOrderDetailPage = () => {

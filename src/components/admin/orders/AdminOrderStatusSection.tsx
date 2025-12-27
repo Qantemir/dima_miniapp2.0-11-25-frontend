@@ -4,20 +4,13 @@ import { OrderStatusBadge } from '@/components/OrderStatusBadge';
 import { AdminSectionCard } from '@/components/admin/orders/AdminSectionCard';
 
 export const AVAILABLE_STATUSES: OrderStatus[] = [
-  'в обработке',
   'принят',
-  'выехал',
-  'завершён',
-  'отменён',
+  'отказано',
 ];
 
 export const STATUS_LABELS: Record<OrderStatus, string> = {
-  'новый': 'В обработке',
-  'в обработке': 'В обработке',
   'принят': 'Принят',
-  'выехал': 'Выехал',
-  'завершён': 'Завершён',
-  'отменён': 'Отменён',
+  'отказано': 'Отказано',
 };
 
 interface AdminOrderStatusSectionProps {

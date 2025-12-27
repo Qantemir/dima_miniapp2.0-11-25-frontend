@@ -277,29 +277,7 @@ class ApiClient {
     });
   }
 
-  async getLastOrder(): Promise<Order | null> {
-    // Оптимизировано: используем fetch напрямую для быстрой проверки
-    try {
-      return await this.request<Order>('/order/last');
-    } catch {
-      // Если нет активного заказа, возвращаем null без обработки ошибки
-      return null;
-    }
-  }
-
-  async updateOrderAddress(
-    orderId: string,
-    data: UpdateAddressRequest
-  ): Promise<Order> {
-    return this.request<Order>(`/order/${orderId}/address`, {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async getOrder(orderId: string): Promise<Order> {
-    return this.request<Order>(`/order/${orderId}`);
-  }
+  // Методы для просмотра заказов пользователем удалены
 
   // ADMIN API
 

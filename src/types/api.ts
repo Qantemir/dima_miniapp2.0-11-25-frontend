@@ -73,12 +73,8 @@ export interface OrderItem {
 }
 
 export type OrderStatus = 
-  | 'новый' 
-  | 'в обработке' 
   | 'принят' 
-  | 'выехал' 
-  | 'завершён' 
-  | 'отменён';
+  | 'отказано';
 
 export interface Order {
   id: string;
@@ -90,6 +86,7 @@ export interface Order {
   delivery_type?: string;
   payment_type?: string;
   status: OrderStatus;
+  rejection_reason?: string; // Причина отказа (если статус "отказано")
   items: OrderItem[];
   total_amount: number;
   created_at: string;
@@ -157,6 +154,7 @@ export interface UpdateAddressRequest {
 
 export interface UpdateStatusRequest {
   status: OrderStatus;
+  rejection_reason?: string; // Причина отказа (обязательна для статуса "отказано")
 }
 
 export interface ApiError {

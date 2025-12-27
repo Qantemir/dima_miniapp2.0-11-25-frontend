@@ -35,7 +35,7 @@ export const AdminOrderDetailView = ({
     <AdminOrderHeader shortOrderId={shortOrderId} createdAt={createdAtLabel} onBack={onBack} />
 
     <div className="p-4 space-y-6">
-      <AdminOrderStatusCard status={order.status} />
+      <AdminOrderStatusCard status={order.status} rejectionReason={order.rejection_reason} />
 
       <AdminOrderStatusActions
         availableStatuses={availableStatuses}

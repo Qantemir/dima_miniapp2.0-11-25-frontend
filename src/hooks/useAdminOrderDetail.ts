@@ -53,7 +53,7 @@ export const useAdminOrderDetail = (orderId?: string) => {
     [order],
   );
 
-  const confirmStatusChange = useCallback(async () => {
+  const confirmStatusChange = useCallback(async (rejectionReason?: string) => {
     if (!order || !pendingStatus || updating) {
       return;
     }
@@ -63,7 +63,10 @@ export const useAdminOrderDetail = (orderId?: string) => {
     setStatusDialogOpen(false);
 
     try {
-      const updatedOrder = await api.updateOrderStatus(order.id, { status: targetStatus });
+      const updatedOrder = await api.updateOrderStatus(order.id, { 
+        status: targetStatus,
+        rejection_reason: rejectionReason,
+      });
       setOrder(updatedOrder);
       toast.success('Статус заказа обновлён');
     } catch (error) {
