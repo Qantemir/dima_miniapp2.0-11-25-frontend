@@ -174,12 +174,35 @@ export interface ApiError {
 // Утилита для получения env переменных (используется только для ADMIN_IDS)
 const getEnvVar = (key: string, defaultValue: string = ''): string => {
   const nextPublicKey = `NEXT_PUBLIC_${key}`;
-  const value = 
-    process.env[nextPublicKey] || 
-    process.env[key] || 
-    (typeof window !== 'undefined' && (window as any).__NEXT_DATA__?.env?.[nextPublicKey]) ||
-    defaultValue;
-  return String(value).trim();
+  
+  // В Next.js переменные NEXT_PUBLIC_* доступны через process.env на клиенте
+  // Они инжектируются во время сборки через next.config.js -> env
+  let value = process.env[nextPublicKey] || process.env[key];
+  
+  // Fallback для SSR и других случаев
+  if (!value && typeof window !== 'undefined') {
+    // Пытаемся получить из __NEXT_DATA__ (встроенные Next.js env)
+    const nextData = (window as any).__NEXT_DATA__;
+    if (nextData?.env?.[nextPublicKey]) {
+      value = nextData.env[nextPublicKey];
+    }
+  }
+  
+  const result = value ? String(value).trim() : defaultValue;
+  
+  // Отладочная информация (только в development)
+  if (process.env.NODE_ENV === 'development' && key === 'VITE_ADMIN_IDS') {
+    console.log('[ENV Debug]', {
+      key,
+      nextPublicKey,
+      'process.env[NEXT_PUBLIC_VITE_ADMIN_IDS]': process.env[nextPublicKey],
+      'process.env[VITE_ADMIN_IDS]': process.env[key],
+      result,
+      isEmpty: !result || result === '',
+    });
+  }
+  
+  return result;
 };
 
 // Чтение API URL с приоритетом: NEXT_PUBLIC_API_URL > NEXT_PUBLIC_VITE_API_URL > VITE_API_URL > '/api'
@@ -234,4 +257,32 @@ if (apiBaseUrl === '/api' && typeof window !== 'undefined') {
 export const API_BASE_URL = apiBaseUrl;
 
 // Admin user IDs (должен совпадать с config.py в Python боте)
-export const ADMIN_IDS = getEnvVar('VITE_ADMIN_IDS', '').split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+const adminIdsString = getEnvVar('VITE_ADMIN_IDS', '');
+export const ADMIN_IDS = adminIdsString
+  .split(',')
+  .map(id => parseInt(id.trim()))
+  .filter(id => !isNaN(id));
+
+// Предупреждение, если ADMIN_IDS пуст (в development и production)
+if (typeof window !== 'undefined') {
+  if (ADMIN_IDS.length === 0) {
+    const isProduction = window.location.hostname.includes('railway.app') || 
+                         window.location.hostname.includes('vercel.app') ||
+                         process.env.NODE_ENV === 'production';
+    
+    if (isProduction) {
+      console.error('[ADMIN_IDS] ❌ КРИТИЧЕСКАЯ ОШИБКА: ADMIN_IDS пуст! Автоматический редирект для админов не будет работать.');
+      console.error('[ADMIN_IDS] ❌ Установите переменную окружения в Railway:');
+      console.error('[ADMIN_IDS]    NEXT_PUBLIC_VITE_ADMIN_IDS=123456789,987654321');
+      console.error('[ADMIN_IDS] ❌ Или: VITE_ADMIN_IDS=123456789,987654321');
+      console.error('[ADMIN_IDS] ❌ Текущее значение:', adminIdsString || '(пусто)');
+    } else {
+      console.warn('[ADMIN_IDS] ⚠️ ADMIN_IDS пуст! Автоматический редирект для админов не будет работать.');
+      console.warn('[ADMIN_IDS] Установите переменную окружения: NEXT_PUBLIC_VITE_ADMIN_IDS=123456789,987654321');
+      console.warn('[ADMIN_IDS] Или: VITE_ADMIN_IDS=123456789,987654321');
+      console.warn('[ADMIN_IDS] Текущее значение:', adminIdsString || '(пусто)');
+    }
+  } else if (process.env.NODE_ENV === 'development') {
+    console.log('[ADMIN_IDS] ✅ Загружено ID админов:', ADMIN_IDS);
+  }
+}
