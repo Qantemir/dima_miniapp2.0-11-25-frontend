@@ -168,10 +168,19 @@ export const AdminCategoryPage = () => {
             next.delete(product.id);
             return next;
           });
-          // Инвалидируем для синхронизации с сервером в фоне
-          queryClient.invalidateQueries({ queryKey: queryKeys.adminCategory(categoryId!) });
-          queryClient.invalidateQueries({ queryKey: queryKeys.adminCatalog });
-          queryClient.invalidateQueries({ queryKey: queryKeys.catalog });
+          // Инвалидируем для синхронизации с сервером в фоне (без автоматического refetch)
+          queryClient.invalidateQueries({ 
+            queryKey: queryKeys.adminCategory(categoryId!),
+            refetchType: 'none' // Не делать автоматический refetch
+          });
+          queryClient.invalidateQueries({ 
+            queryKey: queryKeys.adminCatalog,
+            refetchType: 'none' // Не делать автоматический refetch
+          });
+          queryClient.invalidateQueries({ 
+            queryKey: queryKeys.catalog,
+            refetchType: 'none' // Не делать автоматический refetch
+          });
         } catch {
           // Откатываем изменения при ошибке
           setDeletingProductIds(prev => {
@@ -284,7 +293,7 @@ export const AdminCategoryPage = () => {
     const payload: ProductPayload = {
       ...formData,
       category_id: category.id,
-      image: formData.images?.[0] || formData.image || '',
+      // Убираем image из payload, оставляем только images для избежания дублирования
       images: formData.images,
       variants: variants,
     };
