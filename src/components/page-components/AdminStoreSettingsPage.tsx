@@ -127,30 +127,32 @@ export const AdminStoreSettingsPage = () => {
               </Card>
             </section>
 
-            <section aria-label="Текущий статус магазина">
-              <Card className="border border-border bg-card p-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground">
-                      {sleepEnabled ? 'Магазин закрыт' : 'Магазин открыт'}
-                    </p>
-                    {sleepEnabled && (
-                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                        {message || 'Используется текст по умолчанию'}
+            {status && (
+              <section aria-label="Текущий статус магазина">
+                <Card className="border border-border bg-card p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">
+                        {status.is_sleep_mode ? 'Магазин закрыт' : 'Магазин открыт'}
                       </p>
-                    )}
+                      {status.is_sleep_mode && (
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                          {status.sleep_message || 'Используется текст по умолчанию'}
+                        </p>
+                      )}
+                    </div>
+                    <div className={cn(
+                      "flex-shrink-0 px-2 py-1 rounded-md text-xs font-medium transition-colors",
+                      status.is_sleep_mode 
+                        ? "bg-muted text-muted-foreground" 
+                        : "bg-success/10 text-success"
+                    )}>
+                      {status.is_sleep_mode ? 'Закрыт' : 'Открыт'}
+                    </div>
                   </div>
-                  <div className={cn(
-                    "flex-shrink-0 px-2 py-1 rounded-md text-xs font-medium transition-colors",
-                    sleepEnabled 
-                      ? "bg-muted text-muted-foreground" 
-                      : "bg-success/10 text-success"
-                  )}>
-                    {sleepEnabled ? 'Закрыт' : 'Открыт'}
-                  </div>
-                </div>
-              </Card>
-            </section>
+                </Card>
+              </section>
+            )}
           </>
         )}
       </AdminPageLayout>
