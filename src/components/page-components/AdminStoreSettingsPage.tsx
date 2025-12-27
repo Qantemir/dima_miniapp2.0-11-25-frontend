@@ -24,6 +24,7 @@ export const AdminStoreSettingsPage = () => {
   const {
     data: status,
     isLoading: loading,
+    refetch: refetchStatus,
   } = useQuery({
     queryKey: queryKeys.storeStatus,
     queryFn: () => api.getStoreStatus(),
@@ -47,6 +48,12 @@ export const AdminStoreSettingsPage = () => {
     setMessage(status.sleep_message || '');
   }, [status]);
 
+  // Проверяем, есть ли изменения по сравнению с текущим статусом
+  const hasChanges = status ? (
+    sleepEnabled !== status.is_sleep_mode ||
+    (message || '') !== (status.sleep_message || '')
+  ) : false;
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -57,7 +64,10 @@ export const AdminStoreSettingsPage = () => {
       const updated = await api.setStoreSleepMode(payload);
       setSleepEnabled(updated.is_sleep_mode);
       setMessage(updated.sleep_message || '');
-      queryClient.invalidateQueries({ queryKey: queryKeys.storeStatus });
+      // Обновляем кеш напрямую для мгновенного обновления UI
+      queryClient.setQueryData(queryKeys.storeStatus, updated);
+      // Также делаем refetch для гарантии актуальности данных
+      await refetchStatus();
       toast.success('Статус магазина обновлён');
     } catch (error) {
       toast.error('Не удалось обновить статус магазина');
@@ -148,8 +158,8 @@ export const AdminStoreSettingsPage = () => {
                   </p>
                 </div>
 
-                <Button onClick={handleSave} disabled={saving}>
-                  {saving ? 'Сохранение...' : sleepEnabled ? 'Сохранить изменения' : 'Сохранить настройки'}
+                <Button onClick={handleSave} disabled={saving || !hasChanges}>
+                  {saving ? 'Сохранение...' : 'Сохранить настройки'}
                 </Button>
               </Card>
             </section>
