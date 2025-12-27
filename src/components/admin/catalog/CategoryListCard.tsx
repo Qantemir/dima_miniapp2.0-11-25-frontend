@@ -23,66 +23,86 @@ export const CategoryListCard = ({
   onSelect,
   onEdit,
   onDelete,
-}: CategoryListCardProps) => (
-  <section aria-label="Категории">
-    <Card className="border border-border bg-card p-4 sm:p-5 space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-lg sm:text-xl font-semibold text-foreground">Категории</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Создавайте и редактируйте рубрики каталога
-          </p>
-        </div>
-        <div className="flex-shrink-0">
-          <Button size="sm" onClick={onAdd} className="w-full sm:w-auto">
-            <Plus className="h-4 w-4 mr-2" />
-            Новая категория
-          </Button>
-        </div>
-      </div>
+}: CategoryListCardProps) => {
+  const handleEdit = (category: Category, event: React.MouseEvent) => {
+    event.stopPropagation();
+    // Небольшая задержка для предотвращения двойного срабатывания
+    setTimeout(() => {
+      onEdit(category);
+    }, 100);
+  };
 
-      <div className="divide-y divide-border">
-        {categories.length === 0 ? (
-          <p className="py-3 text-sm text-muted-foreground">Категории ещё не созданы.</p>
-        ) : (
-          categories.map(category => (
-            <div
-              key={category.id}
-              className="py-3 flex items-center justify-between cursor-pointer"
-              onClick={() => onSelect(category.id)}
-            >
-              <div className="flex-1">
-                <p className="font-medium text-foreground">{category.name}</p>
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
+  const handleDelete = (category: Category, event: React.MouseEvent) => {
+    event.stopPropagation();
+    // Небольшая задержка для предотвращения двойного срабатывания
+    setTimeout(() => {
+      onDelete(category);
+    }, 100);
+  };
+
+  return (
+    <section aria-label="Категории">
+      <Card className="border border-border bg-card p-4 sm:p-5 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground">Категории</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Создавайте и редактируйте рубрики каталога
+            </p>
+          </div>
+          <div className="flex-shrink-0">
+            <Button size="sm" onClick={onAdd} className="w-full sm:w-auto">
+              <Plus className="h-4 w-4 mr-2" />
+              Новая категория
+            </Button>
+          </div>
+        </div>
+
+        <div className="divide-y divide-border">
+          {categories.length === 0 ? (
+            <p className="py-3 text-sm text-muted-foreground">Категории ещё не созданы.</p>
+          ) : (
+            categories.map(category => (
+              <div
+                key={category.id}
+                className="py-3 flex items-center justify-between cursor-pointer"
+                onClick={() => onSelect(category.id)}
+              >
+                <div className="flex-1">
+                  <p className="font-medium text-foreground">{category.name}</p>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={event => event.stopPropagation()}
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
                     onClick={event => event.stopPropagation()}
                   >
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  onClick={event => event.stopPropagation()}
-                >
-                  <DropdownMenuItem onClick={() => onEdit(category)}>Редактировать</DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-destructive focus:text-destructive"
-                    onClick={() => onDelete(category)}
-                  >
-                    Удалить
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          ))
-        )}
-      </div>
-    </Card>
-  </section>
-);
+                    <DropdownMenuItem onClick={event => handleEdit(category, event)}>
+                      Редактировать
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={event => handleDelete(category, event)}
+                    >
+                      Удалить
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            ))
+          )}
+        </div>
+      </Card>
+    </section>
+  );
+};
 

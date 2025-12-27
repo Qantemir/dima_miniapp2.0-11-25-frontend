@@ -27,8 +27,10 @@ export function useStoreStatus() {
     staleTime: 2 * 60 * 1000, // 2 минуты - статус меняется редко
     gcTime: 5 * 60 * 1000, // 5 минут кэш
     refetchInterval: 2 * 60 * 1000, // Автоматический polling каждые 2 минуты (увеличено с 60 сек)
-    refetchOnWindowFocus: true, // Обновлять при возврате на вкладку
-    refetchOnMount: true, // Обновлять при монтировании
+    // Используем глобальные настройки для refetch, чтобы избежать конфликтов
+    // и предотвратить 499 ошибки (client closed request) при быстрых переключениях
+    refetchOnWindowFocus: false, // Используем глобальную настройку (false)
+    refetchOnMount: false, // Используем глобальную настройку (false) - данные свежие благодаря staleTime
   });
 
   return {

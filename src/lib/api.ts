@@ -179,6 +179,9 @@ class ApiClient {
       }
 
       if (error instanceof Error && error.name === 'AbortError') {
+        // React Query обрабатывает AbortError корректно (не показывает ошибку пользователю)
+        // Бросаем ошибку только для таймаутов, чтобы пользователь знал о проблеме
+        // Для отмененных запросов React Query просто отменяет query без показа ошибки
         throw new Error('Превышено время ожидания ответа от сервера.');
       }
 
@@ -395,7 +398,9 @@ class ApiClient {
   }
 
   async getStoreStatus(): Promise<StoreStatus> {
-    return this.request<StoreStatus>('/store/status');
+    // Используем дедупликацию запросов, чтобы избежать дублирующих запросов
+    // и предотвратить 499 ошибки (client closed request)
+    return deduplicateRequest('store-status', () => this.request<StoreStatus>('/store/status'));
   }
 
   async setStoreSleepMode(
