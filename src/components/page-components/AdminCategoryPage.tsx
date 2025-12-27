@@ -28,6 +28,7 @@ import {
 import { api } from '@/lib/api';
 import { showPopup } from '@/lib/telegram';
 import { toast } from '@/lib/toast';
+import { compressImages } from '@/lib/image-compression';
 import type { CatalogResponse, Category, Product, ProductPayload, ProductVariant } from '@/types/api';
 import { Seo } from '@/components/Seo';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -58,6 +59,8 @@ export const AdminCategoryPage = () => {
   const [formData, setFormData] = useState<ProductPayload | null>(null);
   const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [deletingProductIds, setDeletingProductIds] = useState<Set<string>>(new Set());
+  const [compressingImages, setCompressingImages] = useState(false);
+  const [imageCompressionProgress, setImageCompressionProgress] = useState({ current: 0, total: 0 });
 
   const fetchCategory = async () => {
     if (!categoryId) throw new Error('Категория не найдена');
@@ -203,29 +206,40 @@ export const AdminCategoryPage = () => {
     );
   };
 
-  const readFileAsDataURL = (file: File) =>
-    new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(file);
-    });
-
   const handleImagesUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
+    
+    const fileArray = Array.from(files);
+    setCompressingImages(true);
+    setImageCompressionProgress({ current: 0, total: fileArray.length });
+    
     try {
-      const converted = await Promise.all(Array.from(files).map(readFileAsDataURL));
+      // Сжимаем изображения на клиенте перед добавлением
+      const compressed = await compressImages(
+        fileArray,
+        { maxWidth: 1920, maxHeight: 1920, quality: 0.85 },
+        (current, total) => {
+          setImageCompressionProgress({ current, total });
+        }
+      );
+      
       setFormData(prev => {
         if (!prev) return prev;
-        const nextImages = [...(prev.images ?? []), ...converted];
+        const nextImages = [...(prev.images ?? []), ...compressed];
         return {
           ...prev,
           images: nextImages,
           image: nextImages[0] || prev.image,
         };
       });
+      
+      toast.success(`Загружено ${compressed.length} изображений`);
     } catch (error) {
+      console.error('Ошибка при сжатии изображений:', error);
       toast.error('Не удалось загрузить изображения');
+    } finally {
+      setCompressingImages(false);
+      setImageCompressionProgress({ current: 0, total: 0 });
     }
   };
 
@@ -270,6 +284,13 @@ export const AdminCategoryPage = () => {
 
   const handleSubmit = async () => {
     if (!formData || !category) return;
+    
+    // Блокируем сохранение пока изображения сжимаются
+    if (compressingImages) {
+      toast.warning('Подождите, изображения обрабатываются...');
+      return;
+    }
+    
     if (!formData.name || !formData.price) {
       toast.warning('Заполните обязательные поля');
       return;
@@ -655,9 +676,20 @@ export const AdminCategoryPage = () => {
 
             <div className="space-y-2">
               <Label>Фотографии</Label>
-              <Input type="file" accept="image/*" multiple onChange={handleImagesInputChange} />
+              <Input 
+                type="file" 
+                accept="image/*" 
+                multiple 
+                onChange={handleImagesInputChange}
+                disabled={compressingImages}
+              />
               <p className="text-xs text-muted-foreground">
                 Загрузите одно или несколько фото. Первое изображение будет отображаться в каталоге.
+                {compressingImages && (
+                  <span className="block mt-1 text-blue-500">
+                    Обработка изображений: {imageCompressionProgress.current} / {imageCompressionProgress.total}
+                  </span>
+                )}
               </p>
               {formData.images && formData.images.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -673,6 +705,7 @@ export const AdminCategoryPage = () => {
                         variant="destructive"
                         className="absolute top-2 right-2 h-6 w-6 rounded-full"
                         onClick={() => removeImage(index)}
+                        disabled={compressingImages}
                       >
                         ×
                       </Button>
@@ -773,8 +806,12 @@ export const AdminCategoryPage = () => {
             <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>
               Отмена
             </Button>
-            <Button onClick={handleSubmit} disabled={saving}>
-              {dialogMode === 'create' ? 'Создать' : 'Сохранить'}
+            <Button onClick={handleSubmit} disabled={saving || compressingImages}>
+              {compressingImages 
+                ? `Обработка изображений... (${imageCompressionProgress.current}/${imageCompressionProgress.total})`
+                : dialogMode === 'create' 
+                  ? 'Создать' 
+                  : 'Сохранить'}
             </Button>
           </DialogFooter>
         </DialogContent>
