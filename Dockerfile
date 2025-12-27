@@ -5,16 +5,29 @@ WORKDIR /app
 
 # Объявляем ARG для переменных окружения, которые нужны во время сборки
 # Railway автоматически передает переменные окружения как build args
+# Используем альтернативные имена для обратной совместимости (как в next.config.js)
 ARG NEXT_PUBLIC_VITE_API_URL
 ARG NEXT_PUBLIC_API_URL
+ARG VITE_API_URL
 ARG NEXT_PUBLIC_VITE_PUBLIC_URL
+ARG VITE_PUBLIC_URL
+ARG RAILWAY_PUBLIC_DOMAIN
 ARG NEXT_PUBLIC_VITE_ADMIN_IDS
+ARG VITE_ADMIN_IDS
 
 # Устанавливаем переменные окружения из ARG для использования во время сборки
-ENV NEXT_PUBLIC_VITE_API_URL=$NEXT_PUBLIC_VITE_API_URL
+# Используем значение из NEXT_PUBLIC_* или альтернативное имя (аналогично next.config.js)
+# API URL: поддерживаем NEXT_PUBLIC_API_URL > NEXT_PUBLIC_VITE_API_URL > VITE_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_VITE_API_URL=$NEXT_PUBLIC_VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+# Public URL: поддерживаем NEXT_PUBLIC_VITE_PUBLIC_URL > VITE_PUBLIC_URL > RAILWAY_PUBLIC_DOMAIN
 ENV NEXT_PUBLIC_VITE_PUBLIC_URL=$NEXT_PUBLIC_VITE_PUBLIC_URL
+ENV VITE_PUBLIC_URL=$VITE_PUBLIC_URL
+ENV RAILWAY_PUBLIC_DOMAIN=$RAILWAY_PUBLIC_DOMAIN
+# Admin IDs: поддерживаем NEXT_PUBLIC_VITE_ADMIN_IDS > VITE_ADMIN_IDS
 ENV NEXT_PUBLIC_VITE_ADMIN_IDS=$NEXT_PUBLIC_VITE_ADMIN_IDS
+ENV VITE_ADMIN_IDS=$VITE_ADMIN_IDS
 
 # Копируем package.json и yarn.lock
 COPY package.json yarn.lock ./

@@ -172,34 +172,75 @@ export interface ApiError {
 // - путь всегда заканчивался на /api.
 
 // Утилита для получения env переменных (используется только для ADMIN_IDS)
+// Работает аналогично тому, как читается API_URL - напрямую из process.env
 const getEnvVar = (key: string, defaultValue: string = ''): string => {
   const nextPublicKey = `NEXT_PUBLIC_${key}`;
   
   // В Next.js переменные NEXT_PUBLIC_* доступны через process.env на клиенте
   // Они инжектируются во время сборки через next.config.js -> env
+  // Читаем аналогично API_URL - напрямую из process.env с fallback
   let value = process.env[nextPublicKey] || process.env[key];
+  
+  // Если значение пустая строка, считаем что переменная не установлена
+  if (value === '' || value === undefined || value === null) {
+    value = null;
+  } else {
+    value = String(value).trim();
+    // Если после trim пусто, тоже считаем что не установлено
+    if (value === '') {
+      value = null;
+    }
+  }
   
   // Fallback для SSR и других случаев
   if (!value && typeof window !== 'undefined') {
     // Пытаемся получить из __NEXT_DATA__ (встроенные Next.js env)
     const nextData = (window as any).__NEXT_DATA__;
     if (nextData?.env?.[nextPublicKey]) {
-      value = nextData.env[nextPublicKey];
+      const nextDataValue = String(nextData.env[nextPublicKey]).trim();
+      if (nextDataValue) {
+        value = nextDataValue;
+      }
     }
   }
   
-  const result = value ? String(value).trim() : defaultValue;
+  const result = value || defaultValue;
   
-  // Отладочная информация (только в development)
-  if (process.env.NODE_ENV === 'development' && key === 'VITE_ADMIN_IDS') {
-    console.log('[ENV Debug]', {
-      key,
-      nextPublicKey,
-      'process.env[NEXT_PUBLIC_VITE_ADMIN_IDS]': process.env[nextPublicKey],
-      'process.env[VITE_ADMIN_IDS]': process.env[key],
-      result,
-      isEmpty: !result || result === '',
-    });
+  // Отладочная информация (всегда, чтобы видеть проблему)
+  if (key === 'VITE_ADMIN_IDS') {
+    const isProduction = typeof window !== 'undefined' && (
+      window.location.hostname.includes('railway.app') || 
+      window.location.hostname.includes('vercel.app') ||
+      process.env.NODE_ENV === 'production'
+    );
+    
+    if (!result || result === '') {
+      if (isProduction) {
+        console.error('[ENV Debug] ❌ ADMIN_IDS не загружен!', {
+          key,
+          nextPublicKey,
+          'process.env[NEXT_PUBLIC_VITE_ADMIN_IDS]': process.env[nextPublicKey],
+          'process.env[VITE_ADMIN_IDS]': process.env[key],
+          'window.__NEXT_DATA__?.env': typeof window !== 'undefined' ? (window as any).__NEXT_DATA__?.env?.[nextPublicKey] : 'N/A',
+          result: result || '(пусто)',
+        });
+      } else {
+        console.warn('[ENV Debug] ⚠️ ADMIN_IDS не загружен!', {
+          key,
+          nextPublicKey,
+          'process.env[NEXT_PUBLIC_VITE_ADMIN_IDS]': process.env[nextPublicKey],
+          'process.env[VITE_ADMIN_IDS]': process.env[key],
+          result: result || '(пусто)',
+        });
+      }
+    } else if (!isProduction) {
+      console.log('[ENV Debug] ✅ ADMIN_IDS загружен:', {
+        key,
+        nextPublicKey,
+        result,
+        adminIds: result.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id)),
+      });
+    }
   }
   
   return result;
@@ -257,11 +298,19 @@ if (apiBaseUrl === '/api' && typeof window !== 'undefined') {
 export const API_BASE_URL = apiBaseUrl;
 
 // Admin user IDs (должен совпадать с config.py в Python боте)
-const adminIdsString = getEnvVar('VITE_ADMIN_IDS', '');
+// Читаем аналогично API_URL - напрямую из process.env с fallback
+const adminIdsString = (
+  process.env.NEXT_PUBLIC_VITE_ADMIN_IDS || 
+  process.env.VITE_ADMIN_IDS || 
+  ''
+).replace(/^["']|["']$/g, '').trim();
+
 export const ADMIN_IDS = adminIdsString
-  .split(',')
-  .map(id => parseInt(id.trim()))
-  .filter(id => !isNaN(id));
+  ? adminIdsString
+      .split(',')
+      .map(id => parseInt(id.trim()))
+      .filter(id => !isNaN(id))
+  : [];
 
 // Предупреждение, если ADMIN_IDS пуст (в development и production)
 if (typeof window !== 'undefined') {
@@ -275,12 +324,24 @@ if (typeof window !== 'undefined') {
       console.error('[ADMIN_IDS] ❌ Установите переменную окружения в Railway:');
       console.error('[ADMIN_IDS]    NEXT_PUBLIC_VITE_ADMIN_IDS=123456789,987654321');
       console.error('[ADMIN_IDS] ❌ Или: VITE_ADMIN_IDS=123456789,987654321');
-      console.error('[ADMIN_IDS] ❌ Текущее значение:', adminIdsString || '(пусто)');
+      console.error('[ADMIN_IDS] ❌ Диагностика:', {
+        'process.env.NEXT_PUBLIC_VITE_ADMIN_IDS': process.env.NEXT_PUBLIC_VITE_ADMIN_IDS || '(не установлено)',
+        'process.env.VITE_ADMIN_IDS': process.env.VITE_ADMIN_IDS || '(не установлено)',
+        'adminIdsString': adminIdsString || '(пусто)',
+        '__NEXT_DATA__?.env?.NEXT_PUBLIC_VITE_ADMIN_IDS': typeof window !== 'undefined' ? (window as any).__NEXT_DATA__?.env?.NEXT_PUBLIC_VITE_ADMIN_IDS || '(не найдено)' : 'N/A',
+        'NODE_ENV': process.env.NODE_ENV,
+      });
+      console.error('[ADMIN_IDS] ❌ ВАЖНО: В Next.js переменные NEXT_PUBLIC_* инжектируются во время СБОРКИ!');
+      console.error('[ADMIN_IDS] ❌ Убедитесь, что переменная установлена в Railway ДО сборки приложения.');
     } else {
       console.warn('[ADMIN_IDS] ⚠️ ADMIN_IDS пуст! Автоматический редирект для админов не будет работать.');
       console.warn('[ADMIN_IDS] Установите переменную окружения: NEXT_PUBLIC_VITE_ADMIN_IDS=123456789,987654321');
       console.warn('[ADMIN_IDS] Или: VITE_ADMIN_IDS=123456789,987654321');
-      console.warn('[ADMIN_IDS] Текущее значение:', adminIdsString || '(пусто)');
+      console.warn('[ADMIN_IDS] Диагностика:', {
+        'process.env.NEXT_PUBLIC_VITE_ADMIN_IDS': process.env.NEXT_PUBLIC_VITE_ADMIN_IDS || '(не установлено)',
+        'process.env.VITE_ADMIN_IDS': process.env.VITE_ADMIN_IDS || '(не установлено)',
+        'adminIdsString': adminIdsString || '(пусто)',
+      });
     }
   } else if (process.env.NODE_ENV === 'development') {
     console.log('[ADMIN_IDS] ✅ Загружено ID админов:', ADMIN_IDS);
