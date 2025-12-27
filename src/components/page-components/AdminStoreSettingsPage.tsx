@@ -36,14 +36,11 @@ export const AdminStoreSettingsPage = () => {
   const [sleepEnabled, setSleepEnabled] = useState(false);
   const [message, setMessage] = useState('');
 
-  const initializedRef = useRef(false);
-
-  // Инициализируем только один раз при первой загрузке
+  // Синхронизируем локальное состояние с данными из сервера
   useEffect(() => {
-    if (!status || initializedRef.current) {
+    if (!status) {
       return;
     }
-    initializedRef.current = true;
     setSleepEnabled(status.is_sleep_mode);
     setMessage(status.sleep_message || '');
   }, [status]);
@@ -62,12 +59,8 @@ export const AdminStoreSettingsPage = () => {
         message: message || undefined,
       };
       const updated = await api.setStoreSleepMode(payload);
-      setSleepEnabled(updated.is_sleep_mode);
-      setMessage(updated.sleep_message || '');
-      // Обновляем кеш напрямую для мгновенного обновления UI
+      // Обновляем кеш напрямую - это мгновенно обновит статус-бар
       queryClient.setQueryData(queryKeys.storeStatus, updated);
-      // Также делаем refetch для гарантии актуальности данных
-      await refetchStatus();
       toast.success('Статус магазина обновлён');
     } catch (error) {
       toast.error('Не удалось обновить статус магазина');
