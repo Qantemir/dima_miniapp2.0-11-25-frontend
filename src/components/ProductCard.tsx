@@ -86,13 +86,20 @@ export const ProductCard = ({
   };
 
   const increment = () => {
-    if (selectedVariant && availableQuantity > quantity) {
-      setQuantity(prev => Math.min(prev + 1, availableQuantity));
-    } else if (!selectedVariant) {
+    if (selectedVariant) {
+      // Если есть вариация, проверяем доступное количество
+      if (availableQuantity > 0 && availableQuantity > quantity) {
+        setQuantity(prev => Math.min(prev + 1, availableQuantity));
+      }
+    } else {
+      // Если нет вариации, просто увеличиваем (но это не должно происходить, т.к. товар без вариаций недоступен)
       setQuantity(prev => prev + 1);
     }
   };
-  const decrement = () => setQuantity(prev => Math.max(1, prev - 1));
+  
+  const decrement = () => {
+    setQuantity(prev => Math.max(1, prev - 1));
+  };
 
   return (
     <HoverScale>

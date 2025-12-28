@@ -20,6 +20,7 @@ export {
   LifeBuoy,
   MapPin,
   Megaphone,
+  MessageCircle,
   Minus,
   Moon,
   MoreHorizontal,
