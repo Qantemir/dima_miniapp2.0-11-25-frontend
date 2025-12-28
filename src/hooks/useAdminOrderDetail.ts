@@ -14,6 +14,7 @@ export const useAdminOrderDetail = (orderId?: string) => {
   const [updating, setUpdating] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<OrderStatus | null>(null);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const loadOrder = useCallback(async () => {
     if (!orderId) {
