@@ -39,7 +39,7 @@ export const AdminBackupPage = () => {
   const handleExport = async () => {
     setExporting(true);
     try {
-      const blob = await api.exportBackup({
+      const { blob, filename } = await api.exportBackup({
         include_carts: includeCarts,
         include_orders: includeOrders,
       });
@@ -48,13 +48,18 @@ export const AdminBackupPage = () => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `backup_${new Date().toISOString().replace(/[:.]/g, '-')}.json.gz`;
+      a.download = filename;
+      a.style.display = 'none';
       document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
       
-      toast.success('Бэкап успешно экспортирован');
+      // Небольшая задержка перед удалением элемента
+      setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }, 100);
+      
+      toast.success('Бэкап успешно экспортирован и скачан');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Не удалось экспортировать бэкап');
     } finally {

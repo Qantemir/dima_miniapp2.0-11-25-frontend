@@ -418,7 +418,7 @@ class ApiClient {
     collections?: string;
     include_carts?: boolean;
     include_orders?: boolean;
-  }): Promise<Blob> {
+  }): Promise<{ blob: Blob; filename: string }> {
     const parts: string[] = [];
     if (params?.collections) parts.push(`collections=${encodeURIComponent(params.collections)}`);
     if (params?.include_carts) parts.push('include_carts=true');
@@ -442,7 +442,20 @@ class ApiClient {
       throw new Error(error.detail || error.message || `Ошибка экспорта: ${response.status}`);
     }
 
-    return response.blob();
+    // Извлекаем имя файла из заголовка Content-Disposition
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let filename = `backup_${new Date().toISOString().replace(/[:.]/g, '-')}.json.gz`;
+    
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+      if (filenameMatch && filenameMatch[1]) {
+        // Убираем кавычки если есть
+        filename = filenameMatch[1].replace(/['"]/g, '');
+      }
+    }
+
+    const blob = await response.blob();
+    return { blob, filename };
   }
 
   async importBackup(
