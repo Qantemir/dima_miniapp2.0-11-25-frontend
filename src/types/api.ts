@@ -174,6 +174,23 @@ export interface UpdateStatusRequest {
   rejection_reason?: string; // Причина отказа (обязательна для статуса "отказано")
 }
 
+export interface BackupInfo {
+  collections: Record<string, number | string>;
+  total_collections: number;
+}
+
+export interface BackupImportResult {
+  status: string;
+  total_imported: number;
+  collections: Record<string, {
+    status: string;
+    imported?: number;
+    error?: string;
+  }>;
+  exported_at?: string;
+  version?: string;
+}
+
 export interface ApiError {
   error: string;
   message: string;
@@ -309,6 +326,21 @@ const adminIdsString = (
 
 export const ADMIN_IDS = adminIdsString
   ? adminIdsString
+      .split(',')
+      .map(id => parseInt(id.trim()))
+      .filter(id => !isNaN(id))
+  : [];
+
+// Backup user IDs (должен совпадать с config.py в Python боте)
+// Читаем аналогично ADMIN_IDS - напрямую из process.env с fallback
+const backupUserIdsString = (
+  process.env.NEXT_PUBLIC_VITE_BACKUP_USER_IDS || 
+  process.env.VITE_BACKUP_USER_IDS || 
+  ''
+).replace(/^["']|["']$/g, '').trim();
+
+export const BACKUP_USER_IDS = backupUserIdsString
+  ? backupUserIdsString
       .split(',')
       .map(id => parseInt(id.trim()))
       .filter(id => !isNaN(id))

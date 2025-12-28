@@ -8,6 +8,7 @@ import { queryClient, queryKeys } from '@/lib/react-query';
 import { AdminViewProvider } from '@/contexts/AdminViewContext';
 import { StoreStatusProvider } from '@/contexts/StoreStatusContext';
 import { StoreSleepOverlay } from '@/components/StoreSleepOverlay';
+import { Toaster } from '@/components/ui/sonner';
 import { initTelegram } from '@/lib/telegram';
 import { api } from '@/lib/api';
 
@@ -29,6 +30,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <InitTelegram />
           {children}
           {!isAdminRoute && <StoreSleepOverlay />}
+          <Toaster />
           {process.env.NODE_ENV === 'development' && (
             <ReactQueryDevtools initialIsOpen={false} />
           )}

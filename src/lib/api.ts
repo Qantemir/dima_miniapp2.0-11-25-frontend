@@ -19,6 +19,8 @@ import {
   type ApiError,
   type AdminCategoryDetail,
   type AdminOrdersResponse,
+  type BackupInfo,
+  type BackupImportResult,
 } from '@/types/api';
 import { getRequestAuthHeaders } from '@/lib/telegram';
 import { deduplicateRequest, createDedupKey } from './request-deduplication';
@@ -403,6 +405,59 @@ class ApiClient {
     return this.request<StoreStatus>('/admin/store/sleep', {
       method: 'PATCH',
       body: JSON.stringify(data),
+    });
+  }
+
+  // BACKUP API
+
+  async getBackupInfo(): Promise<BackupInfo> {
+    return this.request<BackupInfo>('/admin/backup/info');
+  }
+
+  async exportBackup(params?: {
+    collections?: string;
+    include_carts?: boolean;
+    include_orders?: boolean;
+  }): Promise<Blob> {
+    const parts: string[] = [];
+    if (params?.collections) parts.push(`collections=${encodeURIComponent(params.collections)}`);
+    if (params?.include_carts) parts.push('include_carts=true');
+    if (params?.include_orders) parts.push('include_orders=true');
+    
+    const query = parts.length > 0 ? `?${parts.join('&')}` : '';
+    
+    // Используем тот же подход, что и в request() для формирования URL
+    let baseUrl = this.baseUrl;
+    if (this.httpRegex.test(baseUrl)) {
+      baseUrl = baseUrl.replace(this.appApiRegex, '/api');
+    }
+    const url = `${baseUrl}/admin/backup/export${query}`;
+    
+    const response = await fetch(url, {
+      headers: this.buildHeaders(undefined, '/admin/backup/export'),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: response.statusText }));
+      throw new Error(error.detail || error.message || `Ошибка экспорта: ${response.status}`);
+    }
+
+    return response.blob();
+  }
+
+  async importBackup(
+    file: File,
+    clearExisting: boolean = false
+  ): Promise<BackupImportResult> {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (clearExisting) {
+      formData.append('clear_existing', 'true');
+    }
+
+    return this.request<BackupImportResult>('/admin/backup/import', {
+      method: 'POST',
+      body: formData,
     });
   }
 

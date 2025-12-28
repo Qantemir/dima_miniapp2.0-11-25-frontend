@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CatalogPage } from '@pages/CatalogPage';
-import { getUserId, isAdmin, waitForTelegramInitData } from '@/lib/telegram';
-import { ADMIN_IDS } from '@/types/api';
+import { getUserId, isAdmin, isOnlyBackupUser, waitForTelegramInitData } from '@/lib/telegram';
+import { ADMIN_IDS, BACKUP_USER_IDS } from '@/types/api';
 import { useAdminView } from '@/contexts/AdminViewContext';
 
 export default function HomePage() {
@@ -26,12 +26,16 @@ export default function HomePage() {
   }, []);
 
   const isUserAdmin = userId ? isAdmin(userId, ADMIN_IDS) : false;
+  // Проверяем, является ли пользователь ТОЛЬКО backup user (не админ)
+  const isUserOnlyBackup = userId ? isOnlyBackupUser(userId, ADMIN_IDS, BACKUP_USER_IDS) : false;
 
   useEffect(() => {
-    if (!checking && isUserAdmin && !forceClientView) {
+    // Перенаправляем на админку только настоящих админов (не backup users)
+    // Backup users должны иметь доступ только к странице backup, но не к админке
+    if (!checking && isUserAdmin && !isUserOnlyBackup && !forceClientView) {
       router.replace('/admin');
     }
-  }, [checking, isUserAdmin, forceClientView, router]);
+  }, [checking, isUserAdmin, isUserOnlyBackup, forceClientView, router]);
 
   // Показываем загрузку пока проверяем админа
   if (checking) {
@@ -42,7 +46,8 @@ export default function HomePage() {
     );
   }
 
-  if (isUserAdmin && !forceClientView) {
+  // Редирект обрабатывается для админов (но не для backup users)
+  if (isUserAdmin && !isUserOnlyBackup && !forceClientView) {
     return null; // Редирект обрабатывается
   }
 

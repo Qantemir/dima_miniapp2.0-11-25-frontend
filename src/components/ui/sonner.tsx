@@ -1,5 +1,13 @@
-// Fallback пустой Toaster, чтобы не тянуть sonner и не падать в рантайме.
-// Если понадобится визуальный тост — можно вернуть sonner обратно.
-const Toaster = () => null;
+'use client';
 
-export { Toaster };
+import { Toaster as SonnerToaster } from 'sonner';
+
+export function Toaster() {
+  return (
+    <SonnerToaster
+      position="top-center"
+      richColors
+      closeButton
+    />
+  );
+}

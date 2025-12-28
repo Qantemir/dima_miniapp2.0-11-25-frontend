@@ -327,6 +327,23 @@ export const isAdmin = (userId: number, adminIds: number[]): boolean => {
   return adminIds.includes(userId);
 };
 
+export const isBackupUser = (userId: number, backupUserIds: number[]): boolean => {
+  return backupUserIds.includes(userId);
+};
+
+/**
+ * Проверяет, является ли пользователь ТОЛЬКО backup user (не админ).
+ * Backup users имеют доступ только к функциям бэкапа, но не к админке.
+ */
+export const isOnlyBackupUser = (userId: number, adminIds: number[], backupUserIds: number[]): boolean => {
+  // Если пользователь является админом, он не является "только backup user"
+  if (adminIds.includes(userId)) {
+    return false;
+  }
+  // Если пользователь находится в backup_user_ids, но не в admin_ids, то он только backup user
+  return backupUserIds.includes(userId);
+};
+
 const detachMainButtonHandler = (tg?: TelegramWebApp | null) => {
   if (!activeMainButtonHandler) {
     return;
