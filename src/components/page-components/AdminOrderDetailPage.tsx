@@ -7,6 +7,7 @@ import { AdminOrderDetailSkeleton } from '@/components/admin/orders/AdminOrderDe
 import { AdminOrderDetailNotFound } from '@/components/admin/orders/AdminOrderDetailNotFound';
 import { AdminOrderDetailView } from '@/components/admin/orders/AdminOrderDetailView';
 import { AdminOrderStatusDialog } from '@/components/admin/orders/AdminOrderStatusDialog';
+import { AdminOrderDeleteDialog } from '@/components/admin/orders/AdminOrderDeleteDialog';
 import { useAdminOrderDetail } from '@/hooks/useAdminOrderDetail';
 
 const AVAILABLE_STATUSES: OrderStatus[] = [
@@ -29,6 +30,7 @@ export const AdminOrderDetailPage = () => {
     updating,
     pendingStatus,
     statusDialogOpen,
+    deleteDialogOpen,
     receiptUrl,
     shortOrderId,
     createdAtLabel,
@@ -38,7 +40,9 @@ export const AdminOrderDetailPage = () => {
     confirmStatusChange,
     handleStatusDialogChange,
     goBack,
-    deleteOrder,
+    handleDeleteClick,
+    confirmDeleteOrder,
+    handleDeleteDialogChange,
     openChatWithCustomer,
   } = useAdminOrderDetail(orderId);
 
@@ -74,7 +78,7 @@ export const AdminOrderDetailPage = () => {
         onStatusSelect={handleStatusSelect}
         onBack={goBack}
         onChat={openChatWithCustomer}
-        onDelete={deleteOrder}
+        onDelete={handleDeleteClick}
       />
 
       <AdminOrderStatusDialog
@@ -84,6 +88,14 @@ export const AdminOrderDetailPage = () => {
         updating={updating}
         onConfirm={() => confirmStatusChange()}
         onOpenChange={handleStatusDialogChange}
+      />
+
+      <AdminOrderDeleteDialog
+        open={deleteDialogOpen}
+        orderId={order.id}
+        deleting={updating}
+        onOpenChange={handleDeleteDialogChange}
+        onConfirm={confirmDeleteOrder}
       />
     </>
   );

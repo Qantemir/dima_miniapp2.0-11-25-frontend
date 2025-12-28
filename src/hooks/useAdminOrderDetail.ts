@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from '@/lib/router';
+import { useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { API_BASE_URL } from '@/types/api';
 import { toast } from '@/lib/toast';
@@ -8,6 +9,7 @@ import { useAdminGuard } from './useAdminGuard';
 
 export const useAdminOrderDetail = (orderId?: string) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const isAuthorized = useAdminGuard('/admin');
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState<Order | null>(null);
@@ -107,6 +109,11 @@ export const useAdminOrderDetail = (orderId?: string) => {
     setDeleteDialogOpen(false);
     try {
       await api.deleteOrder(order.id);
+      // Инвалидируем кэш списка заказов для всех статусов, чтобы удаленный заказ сразу исчез
+      await queryClient.invalidateQueries({ 
+        queryKey: ['admin-orders'],
+        refetchType: 'active', // Обновить только активные запросы
+      });
       toast.success('Заказ удалён');
       navigate('/admin/orders');
     } catch (error) {
@@ -114,7 +121,7 @@ export const useAdminOrderDetail = (orderId?: string) => {
     } finally {
       setUpdating(false);
     }
-  }, [order, updating, navigate]);
+  }, [order, updating, navigate, queryClient]);
 
   const handleDeleteDialogChange = useCallback(
     (open: boolean) => {

@@ -30,8 +30,8 @@ export const AdminOrderDeleteDialog = ({
         <AlertDialogTitle>Удалить заказ?</AlertDialogTitle>
         <AlertDialogDescription>
           {orderId
-            ? `Заказ #${orderId.slice(-6)} будет удалён. Вы сможете восстановить его в течение 10 минут после удаления.`
-            : 'Заказ будет удалён. Вы сможете восстановить его в течение 10 минут после удаления.'}
+            ? `Заказ #${orderId.slice(-6)} будет удалён без возможности восстановления.`
+            : 'Заказ будет удалён без возможности восстановления.'}
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>

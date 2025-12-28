@@ -308,12 +308,6 @@ class ApiClient {
     });
   }
 
-  async restoreOrder(orderId: string): Promise<Order> {
-    return this.request<Order>(`/admin/order/${orderId}/restore`, {
-      method: 'POST',
-    });
-  }
-
   async deleteOrder(orderId: string): Promise<void> {
     return this.request(`/admin/order/${orderId}`, {
       method: 'DELETE',
