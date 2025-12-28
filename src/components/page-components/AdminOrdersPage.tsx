@@ -16,6 +16,7 @@ import { useAdminGuard } from '@/hooks/useAdminGuard';
 
 const STATUS_FILTERS: Array<{ value: OrderStatus | 'all'; label: string }> = [
   { value: 'all', label: 'Все' },
+  { value: 'новый', label: 'Новые' },
   { value: 'принят', label: 'Принятые' },
   { value: 'отказано', label: 'Отказанные' },
 ];

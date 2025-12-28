@@ -77,6 +77,7 @@ export interface OrderItem {
 }
 
 export type OrderStatus = 
+  | 'новый'
   | 'принят' 
   | 'отказано';
 

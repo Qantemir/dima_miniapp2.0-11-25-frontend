@@ -18,6 +18,8 @@ interface AdminOrderDetailViewProps {
   updating: boolean;
   onStatusSelect: (status: OrderStatus) => void;
   onBack: () => void;
+  onChat?: () => void;
+  onDelete?: () => void;
 }
 
 export const AdminOrderDetailView = ({
@@ -30,9 +32,17 @@ export const AdminOrderDetailView = ({
   updating,
   onStatusSelect,
   onBack,
+  onChat,
+  onDelete,
 }: AdminOrderDetailViewProps) => (
   <main className="min-h-screen bg-background pb-6" role="main">
-    <AdminOrderHeader shortOrderId={shortOrderId} createdAt={createdAtLabel} onBack={onBack} />
+    <AdminOrderHeader 
+      shortOrderId={shortOrderId} 
+      createdAt={createdAtLabel} 
+      onBack={onBack}
+      onChat={onChat}
+      onDelete={onDelete}
+    />
 
     <div className="p-4 space-y-6">
       <AdminOrderStatusCard status={order.status} rejectionReason={order.rejection_reason} />

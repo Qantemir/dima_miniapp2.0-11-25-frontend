@@ -90,6 +90,45 @@ export const useAdminOrderDetail = (orderId?: string) => {
 
   const goBack = useCallback(() => navigate('/admin'), [navigate]);
 
+  const deleteOrder = useCallback(async () => {
+    if (!order || updating) {
+      return;
+    }
+
+    const confirmed = window.confirm('Вы уверены, что хотите удалить этот заказ?');
+    if (!confirmed) {
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      await api.deleteOrder(order.id);
+      toast.success('Заказ удалён');
+      navigate('/admin/orders');
+    } catch (error) {
+      toast.error('Ошибка при удалении заказа');
+    } finally {
+      setUpdating(false);
+    }
+  }, [order, updating, navigate]);
+
+  const openChatWithCustomer = useCallback(() => {
+    if (!order?.user_id) {
+      return;
+    }
+
+    const chatLink = `tg://user?id=${order.user_id}`;
+    const tg = typeof window !== 'undefined' ? window.Telegram?.WebApp : null;
+    
+    if (tg && typeof tg.openTelegramLink === 'function') {
+      // Открываем через мини-апп
+      tg.openTelegramLink(chatLink);
+    } else {
+      // Fallback для веб-версии
+      window.open(chatLink, '_blank');
+    }
+  }, [order]);
+
   const receiptUrl = useMemo(() => {
     if (!order?.payment_receipt_file_id || !orderId) {
       return null;
@@ -133,5 +172,7 @@ export const useAdminOrderDetail = (orderId?: string) => {
     confirmStatusChange,
     handleStatusDialogChange,
     goBack,
+    deleteOrder,
+    openChatWithCustomer,
   };
 };

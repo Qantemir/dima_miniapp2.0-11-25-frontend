@@ -314,6 +314,12 @@ class ApiClient {
     });
   }
 
+  async deleteOrder(orderId: string): Promise<void> {
+    return this.request(`/admin/order/${orderId}`, {
+      method: 'DELETE',
+    });
+  }
+
   async getAdminCatalog(): Promise<CatalogResponse> {
     return this.request<CatalogResponse>('/admin/catalog');
   }

@@ -10,11 +10,13 @@ import { AdminOrderStatusDialog } from '@/components/admin/orders/AdminOrderStat
 import { useAdminOrderDetail } from '@/hooks/useAdminOrderDetail';
 
 const AVAILABLE_STATUSES: OrderStatus[] = [
+  'новый',
   'принят',
   'отказано',
 ];
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
+  'новый': 'Новый',
   'принят': 'Принят',
   'отказано': 'Отказано',
 };
@@ -36,6 +38,8 @@ export const AdminOrderDetailPage = () => {
     confirmStatusChange,
     handleStatusDialogChange,
     goBack,
+    deleteOrder,
+    openChatWithCustomer,
   } = useAdminOrderDetail(orderId);
 
   if (loading) {
@@ -69,6 +73,8 @@ export const AdminOrderDetailPage = () => {
         updating={updating}
         onStatusSelect={handleStatusSelect}
         onBack={goBack}
+        onChat={openChatWithCustomer}
+        onDelete={deleteOrder}
       />
 
       <AdminOrderStatusDialog
