@@ -91,17 +91,20 @@ export const useAdminOrderDetail = (orderId?: string) => {
 
   const goBack = useCallback(() => navigate('/admin'), [navigate]);
 
-  const deleteOrder = useCallback(async () => {
+  const handleDeleteClick = useCallback(() => {
+    if (!order || updating) {
+      return;
+    }
+    setDeleteDialogOpen(true);
+  }, [order, updating]);
+
+  const confirmDeleteOrder = useCallback(async () => {
     if (!order || updating) {
       return;
     }
 
-    const confirmed = window.confirm('Вы уверены, что хотите удалить этот заказ?');
-    if (!confirmed) {
-      return;
-    }
-
     setUpdating(true);
+    setDeleteDialogOpen(false);
     try {
       await api.deleteOrder(order.id);
       toast.success('Заказ удалён');
@@ -112,6 +115,16 @@ export const useAdminOrderDetail = (orderId?: string) => {
       setUpdating(false);
     }
   }, [order, updating, navigate]);
+
+  const handleDeleteDialogChange = useCallback(
+    (open: boolean) => {
+      setDeleteDialogOpen(open);
+      if (!open && !updating) {
+        // Диалог закрыт, ничего не делаем
+      }
+    },
+    [updating],
+  );
 
   const openChatWithCustomer = useCallback(() => {
     if (!order?.user_id) {
@@ -164,6 +177,7 @@ export const useAdminOrderDetail = (orderId?: string) => {
     updating,
     pendingStatus,
     statusDialogOpen,
+    deleteDialogOpen,
     receiptUrl,
     shortOrderId,
     createdAtLabel,
@@ -173,7 +187,9 @@ export const useAdminOrderDetail = (orderId?: string) => {
     confirmStatusChange,
     handleStatusDialogChange,
     goBack,
-    deleteOrder,
+    handleDeleteClick,
+    confirmDeleteOrder,
+    handleDeleteDialogChange,
     openChatWithCustomer,
   };
 };
