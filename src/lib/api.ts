@@ -208,20 +208,8 @@ class ApiClient {
   async getCatalog(): Promise<CatalogResponse> {
     // Оптимизация: используем строку напрямую вместо createDedupKey для простых случаев
     // ETag поддержка добавлена в request() методе
-    return deduplicateRequest('catalog', async () => {
-      try {
-        return await this.request<CatalogResponse>('/catalog');
-      } catch (error) {
-        // Если сервер вернул 304 Not Modified, данные не изменились
-        // React Query будет использовать кэшированные данные
-        if (error instanceof Error && error.message === 'NOT_MODIFIED') {
-          // Бросаем ошибку, чтобы React Query использовал кэш
-          // React Query обработает это через staleTime и вернет кэшированные данные
-          throw error;
-        }
-        throw error;
-      }
-    });
+    // Обработка 304 Not Modified выполняется в request() методе
+    return deduplicateRequest('catalog', () => this.request<CatalogResponse>('/catalog'));
   }
 
   async getCart(): Promise<Cart> {
