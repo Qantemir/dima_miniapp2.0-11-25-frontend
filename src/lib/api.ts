@@ -411,43 +411,49 @@ export const api = new ApiClient(API_BASE_URL);
  * Поддерживает как file_id (ObjectId) для GridFS, так и base64/data URL для обратной совместимости.
  */
 export function getProductImageUrl(image: string | undefined | null): string | undefined {
-  if (!image) return undefined;
+  if (!image || typeof image !== 'string') return undefined;
   
-  // Если это data URL (base64), возвращаем как есть (для обратной совместимости)
-  if (image.startsWith('data:image')) {
-    return image;
-  }
-  
-  // Если это уже полный URL, возвращаем как есть
-  if (image.startsWith('http://') || image.startsWith('https://')) {
-    return image;
-  }
-  
-  // Если это валидный ObjectId (24 символа hex), это file_id из GridFS
-  // ObjectId состоит из 24 hex символов
-  if (/^[0-9a-fA-F]{24}$/.test(image)) {
-    // Формируем URL для получения изображения из GridFS
-    // Используем тот же подход, что и в ApiClient
+  try {
+    // Если это data URL (base64), возвращаем как есть (для обратной совместимости)
+    if (image.startsWith('data:image')) {
+      return image;
+    }
+    
+    // Если это уже полный URL, возвращаем как есть
+    if (image.startsWith('http://') || image.startsWith('https://')) {
+      return image;
+    }
+    
+    // Если это валидный ObjectId (24 символа hex), это file_id из GridFS
+    // ObjectId состоит из 24 hex символов
+    if (/^[0-9a-fA-F]{24}$/.test(image)) {
+      // Формируем URL для получения изображения из GridFS
+      // Используем тот же подход, что и в ApiClient
+      let baseUrl = API_BASE_URL;
+      if (baseUrl.includes('/app/api')) {
+        baseUrl = baseUrl.replace('/app/api', '/api');
+      }
+      // Убираем trailing slash если есть
+      if (baseUrl.endsWith('/')) {
+        baseUrl = baseUrl.slice(0, -1);
+      }
+      return `${baseUrl}/product/image/${image}`;
+    }
+    
+    // По умолчанию считаем, что это file_id (для обратной совместимости)
     let baseUrl = API_BASE_URL;
     if (baseUrl.includes('/app/api')) {
       baseUrl = baseUrl.replace('/app/api', '/api');
     }
-    // Убираем trailing slash если есть
     if (baseUrl.endsWith('/')) {
       baseUrl = baseUrl.slice(0, -1);
     }
     return `${baseUrl}/product/image/${image}`;
+  } catch (error) {
+    // В случае любой ошибки возвращаем undefined
+    console.warn('Error processing product image URL:', error);
+    return undefined;
   }
-  
-  // По умолчанию считаем, что это file_id (для обратной совместимости)
-  let baseUrl = API_BASE_URL;
-  if (baseUrl.includes('/app/api')) {
-    baseUrl = baseUrl.replace('/app/api', '/api');
-  }
-  if (baseUrl.endsWith('/')) {
-    baseUrl = baseUrl.slice(0, -1);
-  }
-  return `${baseUrl}/product/image/${image}`;
 }
 
 

@@ -28,12 +28,13 @@ export const ProductCard = ({
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
     product.variants?.[0] || null
   );
+  const [imageError, setImageError] = useState(false);
 
   const hasVariants = product.variants && product.variants.length > 0;
   const mustSelectVariant = !selectedVariant;
   // Используем только images массив (первый элемент - основное изображение)
   const imageSource = product.images?.[0];
-  const displayImage = imageSource ? getProductImageUrl(imageSource) : null;
+  const displayImage = imageSource && !imageError ? getProductImageUrl(imageSource) : null;
   
   // Товар без вариаций не может быть продан
   if (!hasVariants) {
@@ -47,6 +48,7 @@ export const ProductCard = ({
               loading="lazy"
               decoding="async"
               className="h-full w-full object-cover"
+              onError={() => setImageError(true)}
             />
           </div>
         )}
@@ -119,6 +121,7 @@ export const ProductCard = ({
               decoding="async"
               fetchPriority="low"
               className="h-full w-full object-cover"
+              onError={() => setImageError(true)}
             />
           </motion.div>
         )}

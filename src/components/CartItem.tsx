@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Trash2, Plus, Minus } from '@/components/icons';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ interface CartItemProps {
 }
 
 const CartItem = ({ item, onUpdateQuantity, onRemove }: CartItemProps) => {
+  const [imageError, setImageError] = useState(false);
   const totalPrice = item.price * item.quantity;
 
   const handleDecrease = useCallback(() => {
@@ -38,7 +39,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }: CartItemProps) => {
       whileHover={{ scale: 1.01 }}
       transition={{ duration: 0.2 }}
     >
-      {item.image && (
+      {item.image && !imageError && (
         <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0 border border-border/50">
           <img
             src={getProductImageUrl(item.image) || ''}
@@ -46,6 +47,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }: CartItemProps) => {
             className="w-full h-full object-cover"
             loading="lazy"
             decoding="async"
+            onError={() => setImageError(true)}
           />
         </div>
       )}
