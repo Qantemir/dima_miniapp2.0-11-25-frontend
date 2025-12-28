@@ -19,8 +19,6 @@ import {
   type ApiError,
   type AdminCategoryDetail,
   type AdminOrdersResponse,
-  type BackupInfo,
-  type BackupImportResult,
 } from '@/types/api';
 import { getRequestAuthHeaders } from '@/lib/telegram';
 import { deduplicateRequest, createDedupKey } from './request-deduplication';
@@ -408,76 +406,6 @@ class ApiClient {
     });
   }
 
-  // BACKUP API
-
-  async getBackupInfo(): Promise<BackupInfo> {
-    return this.request<BackupInfo>('/admin/backup/info');
-  }
-
-  async exportBackup(params?: {
-    collections?: string;
-    include_carts?: boolean;
-    include_orders?: boolean;
-  }): Promise<{ blob: Blob; filename: string }> {
-    const parts: string[] = [];
-    if (params?.collections) parts.push(`collections=${encodeURIComponent(params.collections)}`);
-    if (params?.include_carts) parts.push('include_carts=true');
-    if (params?.include_orders) parts.push('include_orders=true');
-    
-    const query = parts.length > 0 ? `?${parts.join('&')}` : '';
-    
-    // Используем тот же подход, что и в request() для формирования URL
-    let baseUrl = this.baseUrl;
-    if (this.httpRegex.test(baseUrl)) {
-      baseUrl = baseUrl.replace(this.appApiRegex, '/api');
-    }
-    const url = `${baseUrl}/admin/backup/export${query}`;
-    
-    const response = await fetch(url, {
-      headers: this.buildHeaders(undefined, '/admin/backup/export'),
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: response.statusText }));
-      throw new Error(error.detail || error.message || `Ошибка экспорта: ${response.status}`);
-    }
-
-    // Извлекаем имя файла из заголовка Content-Disposition
-    const contentDisposition = response.headers.get('Content-Disposition');
-    let filename = `backup_${new Date().toISOString().replace(/[:.]/g, '-')}.json.gz`;
-    
-    if (contentDisposition) {
-      // Пробуем разные варианты парсинга заголовка
-      // Вариант 1: filename="backup_20241201_123456.json.gz"
-      let filenameMatch = contentDisposition.match(/filename\*?=['"]?([^'";\n]+)['"]?/i);
-      if (!filenameMatch) {
-        // Вариант 2: filename=backup_20241201_123456.json.gz (без кавычек)
-        filenameMatch = contentDisposition.match(/filename[^;=\n]*=([^;\n]+)/i);
-      }
-      if (filenameMatch && filenameMatch[1]) {
-        // Убираем кавычки и пробелы
-        filename = filenameMatch[1].trim().replace(/^['"]|['"]$/g, '');
-      }
-    }
-
-    const blob = await response.blob();
-    return { blob, filename };
-  }
-
-  async importBackup(
-    file: File,
-    clearExisting: boolean = false
-  ): Promise<BackupImportResult> {
-    const formData = new FormData();
-    formData.append('file', file);
-    // Явно отправляем булево значение как строку
-    formData.append('clear_existing', clearExisting ? 'true' : 'false');
-
-    return this.request<BackupImportResult>('/admin/backup/import', {
-      method: 'POST',
-      body: formData,
-    });
-  }
 
   // setPaymentLink удален, т.к. payment_link больше не используется
 }
