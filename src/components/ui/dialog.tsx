@@ -24,6 +24,11 @@ const DialogTrigger = React.forwardRef<
     asChild?: boolean;
   }
 >(({ asChild, children, ...props }, ref) => {
+  // Если children undefined или null, возвращаем null
+  if (children === undefined || children === null) {
+    return null;
+  }
+  
   if (asChild && React.isValidElement(children)) {
     return (
       <HeadlessDialog.Button as={React.Fragment}>
