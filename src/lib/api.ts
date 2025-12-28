@@ -447,10 +447,16 @@ class ApiClient {
     let filename = `backup_${new Date().toISOString().replace(/[:.]/g, '-')}.json.gz`;
     
     if (contentDisposition) {
-      const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+      // Пробуем разные варианты парсинга заголовка
+      // Вариант 1: filename="backup_20241201_123456.json.gz"
+      let filenameMatch = contentDisposition.match(/filename\*?=['"]?([^'";\n]+)['"]?/i);
+      if (!filenameMatch) {
+        // Вариант 2: filename=backup_20241201_123456.json.gz (без кавычек)
+        filenameMatch = contentDisposition.match(/filename[^;=\n]*=([^;\n]+)/i);
+      }
       if (filenameMatch && filenameMatch[1]) {
-        // Убираем кавычки если есть
-        filename = filenameMatch[1].replace(/['"]/g, '');
+        // Убираем кавычки и пробелы
+        filename = filenameMatch[1].trim().replace(/^['"]|['"]$/g, '');
       }
     }
 

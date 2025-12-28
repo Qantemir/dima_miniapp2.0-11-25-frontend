@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Database, Download, Upload } from '@/components/icons';
 import { AdminPageLayout } from '@/components/AdminPageLayout';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import type { BackupInfo } from '@/types/api';
 export const AdminBackupPage = () => {
   const isAuthorized = useBackupGuard('/');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const downloadLinkRef = useRef<HTMLAnchorElement | null>(null);
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
   const [clearExisting, setClearExisting] = useState(false);
@@ -36,6 +37,22 @@ export const AdminBackupPage = () => {
     enabled: isAuthorized,
   });
 
+  // Очистка при размонтировании компонента
+  useEffect(() => {
+    return () => {
+      if (downloadLinkRef.current) {
+        const url = downloadLinkRef.current.href;
+        if (url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+        if (document.body.contains(downloadLinkRef.current)) {
+          document.body.removeChild(downloadLinkRef.current);
+        }
+        downloadLinkRef.current = null;
+      }
+    };
+  }, []);
+
   const handleExport = async () => {
     setExporting(true);
     try {
@@ -44,23 +61,63 @@ export const AdminBackupPage = () => {
         include_orders: includeOrders,
       });
       
-      // Создаем ссылку для скачивания
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
+      // Проверяем, что blob не пустой
+      if (!blob || blob.size === 0) {
+        throw new Error('Получен пустой файл');
+      }
       
-      // Небольшая задержка перед удалением элемента
+      // Создаем ссылку для скачивания
+      const url = URL.createObjectURL(blob);
+      
+      // Очищаем предыдущую ссылку, если есть
+      if (downloadLinkRef.current) {
+        const oldUrl = downloadLinkRef.current.href;
+        if (oldUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(oldUrl);
+        }
+        if (document.body.contains(downloadLinkRef.current)) {
+          document.body.removeChild(downloadLinkRef.current);
+        }
+      }
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.style.cssText = 'display: none !important; visibility: hidden !important;';
+      
+      // Сохраняем ссылку для последующей очистки
+      downloadLinkRef.current = link;
+      
+      // Добавляем в DOM
+      document.body.appendChild(link);
+      
+      // Используем setTimeout для гарантии, что элемент добавлен в DOM
       setTimeout(() => {
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
+        try {
+          // Программно кликаем по ссылке
+          link.dispatchEvent(new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+          }));
+        } catch (e) {
+          // Если dispatchEvent не работает, используем обычный click
+          link.click();
+        }
+        
+        // Удаляем элемент и освобождаем URL после задержки
+        setTimeout(() => {
+          if (document.body.contains(link)) {
+            document.body.removeChild(link);
+          }
+          URL.revokeObjectURL(url);
+          downloadLinkRef.current = null;
+        }, 2000);
       }, 100);
       
       toast.success('Бэкап успешно экспортирован и скачан');
     } catch (error) {
+      console.error('Ошибка при экспорте бэкапа:', error);
       toast.error(error instanceof Error ? error.message : 'Не удалось экспортировать бэкап');
     } finally {
       setExporting(false);
