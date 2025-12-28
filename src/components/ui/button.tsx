@@ -17,6 +17,10 @@ const Slot = React.forwardRef<
       ref,
     });
   }
+  // Если children undefined, возвращаем null вместо div с undefined
+  if (children === undefined || children === null) {
+    return null;
+  }
   return <div ref={ref as React.Ref<HTMLDivElement>} {...props}>{children}</div>;
 });
 Slot.displayName = "Slot";

@@ -51,7 +51,7 @@ export const CatalogPage = () => {
 
   // Оптимизированная генерация JSON-LD (только первые 10 товаров для скорости)
   const catalogJsonLd = useMemo(() => {
-    if (!catalogProducts.length) return undefined;
+    if (!catalogProducts.length) return null;
     const products = catalogProducts.slice(0, 10); // Уменьшено с 20 до 10 для скорости
     return {
       "@context": "https://schema.org",
