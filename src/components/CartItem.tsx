@@ -13,25 +13,30 @@ interface CartItemProps {
 
 const CartItem = ({ item, onUpdateQuantity, onRemove }: CartItemProps) => {
   const [imageError, setImageError] = useState(false);
-  const totalPrice = item.price * item.quantity;
+  const totalPrice = (item?.price ?? 0) * (item?.quantity ?? 0);
 
   const handleDecrease = useCallback(() => {
-    if (item.quantity > 1) {
-      onUpdateQuantity(item.id, item.quantity - 1);
+    if (!item?.id) return;
+    const quantity = item.quantity ?? 0;
+    if (quantity > 1) {
+      onUpdateQuantity(item.id, quantity - 1);
     } else {
       onRemove(item.id);
     }
-  }, [item.id, item.quantity, onUpdateQuantity, onRemove]);
+  }, [item?.id, item?.quantity, onUpdateQuantity, onRemove]);
 
   const handleIncrease = useCallback(() => {
-    if (item.quantity < 50) {
-      onUpdateQuantity(item.id, item.quantity + 1);
+    if (!item?.id) return;
+    const quantity = item.quantity ?? 0;
+    if (quantity < 50) {
+      onUpdateQuantity(item.id, quantity + 1);
     }
-  }, [item.id, item.quantity, onUpdateQuantity]);
+  }, [item?.id, item?.quantity, onUpdateQuantity]);
 
   const handleRemove = useCallback(() => {
+    if (!item?.id) return;
     onRemove(item.id);
-  }, [item.id, onRemove]);
+  }, [item?.id, onRemove]);
 
   return (
     <motion.div 
@@ -39,11 +44,11 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }: CartItemProps) => {
       whileHover={{ scale: 1.01 }}
       transition={{ duration: 0.2 }}
     >
-      {item.image && !imageError && (
+      {item?.image && !imageError && (
         <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0 border border-border/50">
           <img
             src={getProductImageUrl(item.image) || ''}
-            alt={item.product_name}
+            alt={item?.product_name || 'Товар'}
             className="w-full h-full object-cover"
             loading="lazy"
             decoding="async"
@@ -56,9 +61,9 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }: CartItemProps) => {
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <h4 className="font-semibold text-foreground truncate text-base sm:text-lg leading-tight">
-              {item.product_name}
+              {item?.product_name || 'Неизвестный товар'}
             </h4>
-            {item.variant_name && (
+            {item?.variant_name && (
               <p className="text-sm text-muted-foreground mt-1">{item.variant_name}</p>
             )}
           </div>
@@ -75,7 +80,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }: CartItemProps) => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
           <div className="flex items-center gap-3">
             <span className="text-sm sm:text-base font-semibold text-foreground">
-              {item.price} ₸
+              {item?.price ?? 0} ₸
             </span>
             <span className="text-sm text-muted-foreground hidden sm:inline">×</span>
             <div className="flex items-center gap-0 border border-border rounded-lg bg-secondary/50">
@@ -84,19 +89,19 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }: CartItemProps) => {
                 variant="ghost"
                 className="h-9 w-9 sm:h-8 sm:w-8 rounded-l-lg rounded-r-none"
                 onClick={handleDecrease}
-                disabled={item.quantity <= 1}
+                disabled={(item?.quantity ?? 0) <= 1}
               >
                 <Minus className="h-4 w-4" />
               </Button>
               <span className="min-w-[2.5rem] text-center text-sm sm:text-base font-semibold text-foreground px-2">
-                {item.quantity}
+                {item?.quantity ?? 0}
               </span>
               <Button
                 size="icon"
                 variant="ghost"
                 className="h-9 w-9 sm:h-8 sm:w-8 rounded-r-lg rounded-l-none"
                 onClick={handleIncrease}
-                disabled={item.quantity >= 50}
+                disabled={(item?.quantity ?? 0) >= 50}
               >
                 <Plus className="h-4 w-4" />
               </Button>

@@ -17,12 +17,15 @@ export const AdminPageLayout = ({
   contentLabel,
   ...headerProps
 }: AdminPageLayoutProps) => {
+  const safeTitle = headerProps?.title || 'Админ-панель';
+  const safeContentLabel = contentLabel ?? safeTitle;
+  
   return (
     <main className="min-h-screen bg-background pb-6" role="main">
       <AdminHeader {...headerProps} />
       <section
         className={cn('p-4', contentClassName)}
-        aria-label={contentLabel ?? headerProps.title}
+        aria-label={safeContentLabel}
       >
         {children}
       </section>

@@ -5,7 +5,7 @@ type AdminViewContextValue = {
   setForceClientView: (value: boolean) => void;
 };
 
-const AdminViewContext = createContext<AdminViewContextValue | undefined>(undefined);
+export const AdminViewContext = createContext<AdminViewContextValue | undefined>(undefined);
 
 export const AdminViewProvider = ({ children }: { children: ReactNode }) => {
   const [forceClientView, setForceClientView] = useState<boolean>(false);

@@ -30,10 +30,10 @@ export const ProductCard = ({
   );
   const [imageError, setImageError] = useState(false);
 
-  const hasVariants = product.variants && product.variants.length > 0;
+  const hasVariants = product?.variants && Array.isArray(product.variants) && product.variants.length > 0;
   const mustSelectVariant = !selectedVariant;
   // Используем только images массив (первый элемент - основное изображение)
-  const imageSource = product.images?.[0];
+  const imageSource = product?.images?.[0];
   const displayImage = imageSource && !imageError ? getProductImageUrl(imageSource) : null;
   
   // Товар без вариаций не может быть продан
@@ -44,7 +44,7 @@ export const ProductCard = ({
           <div className="aspect-[4/3] w-full overflow-hidden bg-muted" role="img" aria-label={`Изображение товара ${product.name}`}>
             <img
               src={displayImage}
-              alt={product.description ? `${product.name} - ${product.description.substring(0, 100)}` : product.name}
+              alt={product?.description ? `${product?.name || 'Товар'} - ${product.description.substring(0, 100)}` : product?.name || 'Товар'}
               loading="lazy"
               decoding="async"
               className="h-full w-full object-cover"
@@ -54,8 +54,8 @@ export const ProductCard = ({
         )}
         <div className="p-3 space-y-3">
           <header>
-            <h3 className="font-semibold text-foreground">{product.name}</h3>
-            {product.description && (
+            <h3 className="font-semibold text-foreground">{product?.name || 'Без названия'}</h3>
+            {product?.description && (
               <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                 {product.description}
               </p>
@@ -70,8 +70,8 @@ export const ProductCard = ({
     );
   }
   
-  const currentPrice = product.price || 0; // Используем цену товара
-  const isAvailable = selectedVariant?.available ?? product.available;
+  const currentPrice = product?.price ?? 0; // Используем цену товара
+  const isAvailable = selectedVariant?.available ?? product?.available ?? false;
   const availableQuantity = selectedVariant?.quantity ?? 0;
 
   const handleAddToCart = () => {
@@ -116,7 +116,7 @@ export const ProductCard = ({
           >
             <img
               src={displayImage}
-              alt={product.description ? `${product.name} - ${product.description.substring(0, 100)}` : product.name}
+              alt={product?.description ? `${product?.name || 'Товар'} - ${product.description.substring(0, 100)}` : product?.name || 'Товар'}
               loading="lazy"
               decoding="async"
               fetchPriority="low"
@@ -128,8 +128,8 @@ export const ProductCard = ({
       
       <article className="p-3 sm:p-4 space-y-3">
         <header>
-          <h3 className="font-semibold text-sm sm:text-base text-foreground leading-tight line-clamp-1">{product.name}</h3>
-          {product.description && (
+          <h3 className="font-semibold text-sm sm:text-base text-foreground leading-tight line-clamp-1">{product?.name || 'Без названия'}</h3>
+          {product?.description && (
             <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
               {product.description}
             </p>
@@ -139,7 +139,8 @@ export const ProductCard = ({
         <div className="space-y-2">
           <p className="text-xs font-medium text-muted-foreground">Вкус *:</p>
             <div className="flex flex-wrap gap-2">
-              {product.variants.map((variant) => {
+              {product?.variants?.map((variant) => {
+                if (!variant || !variant.id) return null;
                 const variantQuantity = variant.quantity ?? 0;
                 const isOutOfStock = variantQuantity === 0;
                 return (
@@ -156,7 +157,7 @@ export const ProductCard = ({
                         : 'bg-secondary text-secondary-foreground border-border hover:bg-secondary/80 active:scale-95'
                     } ${!variant.available || isOutOfStock ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                   >
-                    <span className="font-medium">{variant.name}</span>
+                    <span className="font-medium">{variant.name || 'Без названия'}</span>
                     {variantQuantity > 0 && (
                       <span className="ml-1.5 text-xs opacity-75">
                         ({variantQuantity})

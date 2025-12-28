@@ -8,32 +8,47 @@ export function useNavigate() {
   const router = useRouter();
   
   return (to: string | number, options?: { replace?: boolean }) => {
-    if (typeof to === 'number') {
-      // Если передано число, делаем go back/forward
-      if (to === -1) {
-        router.back();
-      } else if (to === 1) {
-        router.forward();
-      }
-    } else {
-      // Если строка, делаем навигацию
-      if (options?.replace) {
-        router.replace(to);
+    if (!router) {
+      console.warn('Router not available');
+      return;
+    }
+    
+    try {
+      if (typeof to === 'number') {
+        // Если передано число, делаем go back/forward
+        if (to === -1) {
+          router.back();
+        } else if (to === 1) {
+          router.forward();
+        }
       } else {
-        router.push(to);
+        // Если строка, делаем навигацию
+        if (options?.replace) {
+          router.replace(to);
+        } else {
+          router.push(to);
+        }
       }
+    } catch (error) {
+      console.error('Navigation error:', error);
     }
   };
 }
 
 // Хук для получения текущего пути (замена useLocation из react-router)
 export function useLocation() {
-  const pathname = usePathname();
+  let pathname: string | null = null;
+  
+  try {
+    pathname = usePathname();
+  } catch (error) {
+    console.warn('usePathname error:', error);
+  }
   
   return {
     pathname: pathname || '/',
-    search: typeof window !== 'undefined' ? window.location.search : '',
-    hash: typeof window !== 'undefined' ? window.location.hash : '',
+    search: typeof window !== 'undefined' ? (window.location?.search || '') : '',
+    hash: typeof window !== 'undefined' ? (window.location?.hash || '') : '',
     state: null, // Next.js не поддерживает state в навигации
   };
 }
