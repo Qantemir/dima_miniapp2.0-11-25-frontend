@@ -7,12 +7,6 @@ import { useAdminGuard } from '@/hooks/useAdminGuard';
 
 export const AdminHelpPage = () => {
   const isAuthorized = useAdminGuard('/');
-  const seoProps = {
-    title: 'Админ: Помощь',
-    description: 'Инструкции по управлению каталогом, заказами и режимом сна.',
-    path: '/admin/help',
-    noIndex: true,
-  };
 
   if (!isAuthorized) {
     return null;
@@ -20,7 +14,12 @@ export const AdminHelpPage = () => {
 
   return (
     <>
-      <Seo {...seoProps} />
+      <Seo 
+        title="Админ: Помощь" 
+        description="Инструкции по управлению каталогом, заказами и режимом сна." 
+        path="/admin/help" 
+        noIndex={true} 
+      />
       <AdminPageLayout
         title="Помощь"
         description="Краткая инструкция по работе с админ-панелью"

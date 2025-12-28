@@ -23,45 +23,64 @@ export const CartPage = () => {
   const { headerRef, headerHeight } = useFixedHeaderOffset(72);
   const headerTopOffset = 'calc(env(safe-area-inset-top, 0px) + var(--tg-header-height, 0px))';
 
-  // Оптимизированные обработчики
-  const handleBack = useCallback(() => navigate('/'), [navigate]);
-  const handleCheckout = useCallback(() => navigate('/checkout'), [navigate]);
+  const handleBack = useCallback(() => {
+    if (navigate) {
+      navigate('/');
+    }
+  }, [navigate]);
+
+  const handleCheckout = useCallback(() => {
+    if (navigate) {
+      navigate('/checkout');
+    }
+  }, [navigate]);
 
   useEffect(() => {
-    showBackButton(handleBack);
+    if (showBackButton && handleBack) {
+      showBackButton(handleBack);
+    }
     return () => {
-      hideMainButton();
-      hideBackButton();
+      if (hideMainButton) hideMainButton();
+      if (hideBackButton) hideBackButton();
     };
   }, [handleBack]);
 
   useEffect(() => {
-    if (cart && cart.items.length > 0) {
-      showMainButton(`Оформить заказ • ${cart.total_amount} ₸`, handleCheckout);
+    if (cart && Array.isArray(cart.items) && cart.items.length > 0 && cart.total_amount !== undefined) {
+      if (showMainButton && handleCheckout) {
+        showMainButton(`Оформить заказ • ${cart.total_amount} ₸`, handleCheckout);
+      }
     } else {
-      hideMainButton();
+      if (hideMainButton) hideMainButton();
     }
   }, [cart, handleCheckout]);
 
   const handleUpdateQuantity = useCallback(async (itemId: string, quantity: number) => {
+    if (!itemId || !quantity || quantity < 1) return;
+    
     try {
       const updatedCart = await api.updateCartItem({ item_id: itemId, quantity });
-      queryClient.setQueryData(CART_QUERY_KEY, updatedCart);
-    } catch {
+      if (updatedCart && queryClient) {
+        queryClient.setQueryData(CART_QUERY_KEY, updatedCart);
+      }
+    } catch (error) {
       toast.error('Ошибка при обновлении количества');
     }
   }, [queryClient]);
 
   const handleRemoveItem = useCallback(async (itemId: string) => {
+    if (!itemId) return;
+    
     try {
       const updatedCart = await api.removeFromCart({ item_id: itemId });
-      queryClient.setQueryData(CART_QUERY_KEY, updatedCart);
-    } catch {
+      if (updatedCart && queryClient) {
+        queryClient.setQueryData(CART_QUERY_KEY, updatedCart);
+      }
+    } catch (error) {
       toast.error('Ошибка при удалении товара');
     }
   }, [queryClient]);
 
-  // Мемоизация JSON-LD
   const cartJsonLd = useMemo(() => ({
     "@context": "https://schema.org",
     "@type": "WebPage",
@@ -84,7 +103,11 @@ export const CartPage = () => {
     );
   }
 
-  if (!cart || cart.items.length === 0) {
+  const hasItems = cart && Array.isArray(cart.items) && cart.items.length > 0;
+  const safeItems = hasItems ? cart.items.filter(item => item && item.id) : [];
+  const totalAmount = cart?.total_amount ?? 0;
+
+  if (!hasItems) {
     return (
       <>
         <Seo title="Корзина пуста" description="Добавьте товары в корзину, чтобы оформить заказ." path="/cart" jsonLd={cartJsonLd} />
@@ -100,7 +123,7 @@ export const CartPage = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate('/')}
+              onClick={handleBack}
               className="h-9 w-9 sm:h-10 sm:w-10"
             >
               <ArrowLeft className="h-5 w-5" />
@@ -113,7 +136,7 @@ export const CartPage = () => {
           className="min-h-screen bg-background flex flex-col"
           role="main"
           style={{
-            paddingTop: `calc(${headerHeight}px + env(safe-area-inset-top, 0px) + var(--tg-header-height, 0px))`,
+            paddingTop: `calc(${headerHeight || 0}px + env(safe-area-inset-top, 0px) + var(--tg-header-height, 0px))`,
           }}
         >
           <div className="flex-1 flex flex-col items-center justify-center p-4">
@@ -148,7 +171,7 @@ export const CartPage = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate('/')}
+                onClick={handleBack}
                 className="h-9 w-9 sm:h-10 sm:w-10"
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -161,20 +184,23 @@ export const CartPage = () => {
             className="min-h-screen bg-background pb-24"
             role="main"
             style={{
-              paddingTop: `calc(${headerHeight}px + env(safe-area-inset-top, 0px) + var(--tg-header-height, 0px))`,
+              paddingTop: `calc(${headerHeight || 0}px + env(safe-area-inset-top, 0px) + var(--tg-header-height, 0px))`,
             }}
           >
             <section className="px-4 py-5 sm:px-6 sm:py-6" aria-label="Товары в корзине">
               <AnimatedList className="space-y-4">
-                {cart.items.map((item) => (
-                  <AnimatedItem key={item.id} index={0}>
-                    <CartItem
-                      item={item}
-                      onUpdateQuantity={handleUpdateQuantity}
-                      onRemove={handleRemoveItem}
-                    />
-                  </AnimatedItem>
-                ))}
+                {safeItems.map((item) => {
+                  if (!item || !item.id) return null;
+                  return (
+                    <AnimatedItem key={item.id} index={0}>
+                      <CartItem
+                        item={item}
+                        onUpdateQuantity={handleUpdateQuantity}
+                        onRemove={handleRemoveItem}
+                      />
+                    </AnimatedItem>
+                  );
+                })}
               </AnimatedList>
             </section>
 
@@ -182,7 +208,7 @@ export const CartPage = () => {
               <div className="flex items-center justify-between">
                 <span className="text-base sm:text-lg font-semibold text-muted-foreground">Итого:</span>
                 <span className="font-bold text-foreground text-2xl sm:text-3xl">
-                  {cart.total_amount} ₸
+                  {totalAmount} ₸
                 </span>
               </div>
             </section>
