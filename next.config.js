@@ -85,8 +85,7 @@ const nextConfig = {
   // Экспериментальные функции для производительности
   experimental: {
     optimizePackageImports: [
-      '@radix-ui/react-dialog',
-      '@radix-ui/react-dropdown-menu',
+      '@headlessui/react',
       'lucide-react',
       'framer-motion',
     ],

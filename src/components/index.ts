@@ -32,5 +32,5 @@ export { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 export { Input } from './ui/input';
 export { Label } from './ui/label';
 export { Skeleton } from './ui/skeleton';
-export { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
+export { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 

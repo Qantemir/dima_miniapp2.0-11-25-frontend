@@ -25,10 +25,7 @@
       "@lib/*": ["./src/lib/*"],
       "@hooks/*": ["./src/hooks/*"],
       "@types/*": ["./src/types/*"],
-      "@pages/*": ["./src/components/page-components/*"],
-      "@radix-ui/react-slot": [
-        "./node_modules/@radix-ui/react-slot/dist/index.d.ts"
-      ]
+      "@pages/*": ["./src/components/page-components/*"]
     },
     "noImplicitAny": false,
     "noUnusedParameters": false,
