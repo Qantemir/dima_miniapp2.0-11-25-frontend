@@ -464,9 +464,8 @@ class ApiClient {
   ): Promise<BackupImportResult> {
     const formData = new FormData();
     formData.append('file', file);
-    if (clearExisting) {
-      formData.append('clear_existing', 'true');
-    }
+    // Явно отправляем булево значение как строку
+    formData.append('clear_existing', clearExisting ? 'true' : 'false');
 
     return this.request<BackupImportResult>('/admin/backup/import', {
       method: 'POST',
