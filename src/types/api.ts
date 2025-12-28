@@ -23,7 +23,9 @@ export interface Product {
   category_id: string;
   name: string;
   description?: string;
+  /** @deprecated Используйте images[0] вместо image. Поле оставлено для обратной совместимости. */
   image?: string;
+  /** Массив изображений товара. Первый элемент (images[0]) - основное изображение. */
   images?: string[];
   variants?: ProductVariant[];
   price?: number;
@@ -34,7 +36,9 @@ export interface ProductPayload {
   name: string;
   description?: string;
   price: number;
+  /** @deprecated Используйте images. Поле оставлено для обратной совместимости с API. */
   image?: string;
+  /** Массив изображений товара. Первый элемент (images[0]) - основное изображение. */
   images?: string[];
   category_id: string;
   available: boolean;

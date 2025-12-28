@@ -67,7 +67,7 @@ export const CatalogPage = () => {
         "@type": "Product",
         name: product.name,
         description: product.description?.substring(0, 150), // Ограничиваем описание
-        image: getProductImageUrl(product.images?.[0] || product.image),
+        image: product.images?.[0] ? getProductImageUrl(product.images[0]) : undefined,
         offers: {
           "@type": "Offer",
           priceCurrency: "KZT",

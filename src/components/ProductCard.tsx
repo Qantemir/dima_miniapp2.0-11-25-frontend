@@ -31,8 +31,9 @@ export const ProductCard = ({
 
   const hasVariants = product.variants && product.variants.length > 0;
   const mustSelectVariant = !selectedVariant;
-  const imageSource = product.images?.[0] ?? product.image;
-  const displayImage = getProductImageUrl(imageSource);
+  // Используем только images массив (первый элемент - основное изображение)
+  const imageSource = product.images?.[0];
+  const displayImage = imageSource ? getProductImageUrl(imageSource) : null;
   
   // Товар без вариаций не может быть продан
   if (!hasVariants) {

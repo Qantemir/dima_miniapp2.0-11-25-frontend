@@ -41,7 +41,6 @@ const createEmptyProduct = (categoryId: string): ProductPayload => ({
   name: '',
   description: '',
   price: 0,
-  image: '',
   images: [],
   category_id: categoryId,
   available: true,
@@ -109,8 +108,10 @@ export const AdminCategoryPage = () => {
       name: product.name,
       description: product.description || '',
       price: product.price || 0,
-      image: product.image || product.images?.[0] || '',
-      images: product.images || (product.image ? [product.image] : []),
+      // Используем только images массив (бэкенд нормализует image в images)
+      images: product.images && product.images.length > 0 
+        ? product.images 
+        : (product.image ? [product.image] : []),
       category_id: product.category_id,
       available: product.available,
     });
@@ -229,7 +230,6 @@ export const AdminCategoryPage = () => {
         return {
           ...prev,
           images: nextImages,
-          image: nextImages[0] || prev.image,
         };
       });
       
@@ -255,7 +255,6 @@ export const AdminCategoryPage = () => {
       return {
         ...prev,
         images: nextImages,
-        image: nextImages[0] || '',
       };
     });
   };
@@ -336,7 +335,6 @@ export const AdminCategoryPage = () => {
         name: payload.name,
         description: payload.description || '',
         price: payload.price,
-        image: payload.image || payload.images?.[0] || '',
         images: payload.images || [],
         category_id: payload.category_id,
         available: payload.available ?? true,
@@ -370,7 +368,6 @@ export const AdminCategoryPage = () => {
         name: payload.name,
         description: payload.description || '',
         price: payload.price,
-        image: payload.image || payload.images?.[0] || '',
         images: payload.images || [],
         available: payload.available ?? true,
         variants: payload.variants || [],
