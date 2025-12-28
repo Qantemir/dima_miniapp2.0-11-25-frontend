@@ -21,7 +21,7 @@ const ReactQueryDevtools = process.env.NODE_ENV === 'development'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAdminRoute = pathname?.startsWith('/admin') ?? false;
+  const isAdminRoute = (pathname ?? '/')?.startsWith('/admin') ?? false;
 
   return (
     <QueryClientProvider client={queryClient}>

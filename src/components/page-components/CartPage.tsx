@@ -88,47 +88,45 @@ export const CartPage = () => {
     return (
       <>
         <Seo title="Корзина пуста" description="Добавьте товары в корзину, чтобы оформить заказ." path="/cart" jsonLd={cartJsonLd} />
-        <>
-          <div
-            ref={headerRef}
-            className="fixed inset-x-0 bg-card border-b border-border px-3 py-2.5 sm:px-4 sm:py-4"
-            style={{
-              top: headerTopOffset,
-              zIndex: 10,
-            }}
-          >
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate('/')}
-                className="h-9 w-9 sm:h-10 sm:w-10"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <h1 className="text-lg sm:text-xl font-bold text-foreground">Корзина</h1>
-            </div>
+        <div
+          ref={headerRef}
+          className="fixed inset-x-0 bg-card border-b border-border px-3 py-2.5 sm:px-4 sm:py-4"
+          style={{
+            top: headerTopOffset,
+            zIndex: 10,
+          }}
+        >
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/')}
+              className="h-9 w-9 sm:h-10 sm:w-10"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-lg sm:text-xl font-bold text-foreground">Корзина</h1>
           </div>
+        </div>
 
-          <main
-            className="min-h-screen bg-background flex flex-col"
-            role="main"
-            style={{
-              paddingTop: `calc(${headerHeight}px + env(safe-area-inset-top, 0px) + var(--tg-header-height, 0px))`,
-            }}
-          >
-            <div className="flex-1 flex flex-col items-center justify-center p-4">
-              <ShoppingCart className="h-16 w-16 text-muted-foreground mb-4" />
-              <p className="text-lg text-muted-foreground mb-2">Корзина пуста</p>
-              <p className="text-sm text-muted-foreground mb-6">
-                Добавьте товары из каталога
-              </p>
-              <Button onClick={handleBack}>
-                Перейти к покупкам
-              </Button>
-            </div>
-          </main>
-        </>
+        <main
+          className="min-h-screen bg-background flex flex-col"
+          role="main"
+          style={{
+            paddingTop: `calc(${headerHeight}px + env(safe-area-inset-top, 0px) + var(--tg-header-height, 0px))`,
+          }}
+        >
+          <div className="flex-1 flex flex-col items-center justify-center p-4">
+            <ShoppingCart className="h-16 w-16 text-muted-foreground mb-4" />
+            <p className="text-lg text-muted-foreground mb-2">Корзина пуста</p>
+            <p className="text-sm text-muted-foreground mb-6">
+              Добавьте товары из каталога
+            </p>
+            <Button onClick={handleBack}>
+              Перейти к покупкам
+            </Button>
+          </div>
+        </main>
       </>
     );
   }

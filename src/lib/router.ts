@@ -31,7 +31,7 @@ export function useLocation() {
   const pathname = usePathname();
   
   return {
-    pathname,
+    pathname: pathname || '/',
     search: typeof window !== 'undefined' ? window.location.search : '',
     hash: typeof window !== 'undefined' ? window.location.hash : '',
     state: null, // Next.js не поддерживает state в навигации
