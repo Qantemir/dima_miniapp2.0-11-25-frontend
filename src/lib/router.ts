@@ -37,13 +37,8 @@ export function useNavigate() {
 
 // Хук для получения текущего пути (замена useLocation из react-router)
 export function useLocation() {
-  let pathname: string | null = null;
-  
-  try {
-    pathname = usePathname();
-  } catch (error) {
-    console.warn('usePathname error:', error);
-  }
+  // Хуки должны вызываться безусловно
+  const pathname = usePathname();
   
   return {
     pathname: pathname || '/',
