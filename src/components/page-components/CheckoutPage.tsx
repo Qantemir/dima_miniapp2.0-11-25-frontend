@@ -49,7 +49,7 @@ export const CheckoutPage = () => {
     address: '',
     comment: '',
   });
-  const { data: cartSummary, isFetching: cartLoading, refetch: refetchCart } = useCart(true);
+  const { data: cartSummary, isFetching: cartLoading } = useCart(true);
   const { status: storeStatus } = useStoreStatus();
   const [paymentReceipt, setPaymentReceipt] = useState<File | null>(null);
   const [receiptError, setReceiptError] = useState<string | null>(null);
@@ -330,14 +330,9 @@ export const CheckoutPage = () => {
         </div>
 
         <Card className="p-4 sm:p-5 space-y-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold text-base sm:text-lg">Состав заказа</p>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Проверьте товары перед оплатой</p>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => refetchCart()} disabled={cartLoading} className="flex-shrink-0 h-9 px-3 text-sm">
-              Обновить
-            </Button>
+          <div>
+            <p className="font-semibold text-base sm:text-lg">Состав заказа</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Проверьте товары перед оплатой</p>
           </div>
 
           {cartLoading ? (
