@@ -11,6 +11,11 @@ interface DialogProps {
 }
 
 const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
+  // Если children undefined или null, возвращаем null
+  if (children === undefined || children === null) {
+    return null;
+  }
+  
   return (
     <HeadlessDialog open={open} onClose={() => onOpenChange(false)} className="relative z-50">
       {children}
@@ -47,47 +52,52 @@ DialogTrigger.displayName = "DialogTrigger";
 const DialogContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
->(({ className, children, ...props }, ref) => (
-  <>
-    <Transition.Child
-      as={React.Fragment}
-      enter="ease-out duration-200"
-      enterFrom="opacity-0"
-      enterTo="opacity-100"
-      leave="ease-in duration-200"
-      leaveFrom="opacity-100"
-      leaveTo="opacity-0"
-    >
-      <HeadlessDialog.Overlay className="fixed inset-0 bg-black/80" />
-    </Transition.Child>
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+>(({ className, children, ...props }, ref) => {
+  // Если children undefined или null, используем пустой фрагмент
+  const safeChildren = children === undefined || children === null ? null : children;
+  
+  return (
+    <>
       <Transition.Child
         as={React.Fragment}
         enter="ease-out duration-200"
-        enterFrom="opacity-0 scale-95"
-        enterTo="opacity-100 scale-100"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
         leave="ease-in duration-200"
-        leaveFrom="opacity-100 scale-100"
-        leaveTo="opacity-0 scale-95"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
       >
-        <HeadlessDialog.Panel
-          ref={ref}
-          className={cn(
-            "relative z-50 grid w-full max-w-lg gap-4 border bg-background p-6 shadow-lg sm:rounded-lg",
-            className,
-          )}
-          {...props}
-        >
-          {children}
-          <HeadlessDialog.Button className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </HeadlessDialog.Button>
-        </HeadlessDialog.Panel>
+        <HeadlessDialog.Overlay className="fixed inset-0 bg-black/80" />
       </Transition.Child>
-    </div>
-  </>
-));
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <Transition.Child
+          as={React.Fragment}
+          enter="ease-out duration-200"
+          enterFrom="opacity-0 scale-95"
+          enterTo="opacity-100 scale-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100 scale-100"
+          leaveTo="opacity-0 scale-95"
+        >
+          <HeadlessDialog.Panel
+            ref={ref}
+            className={cn(
+              "relative z-50 grid w-full max-w-lg gap-4 border bg-background p-6 shadow-lg sm:rounded-lg",
+              className,
+            )}
+            {...props}
+          >
+            {safeChildren}
+            <HeadlessDialog.Button className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </HeadlessDialog.Button>
+          </HeadlessDialog.Panel>
+        </Transition.Child>
+      </div>
+    </>
+  );
+});
 DialogContent.displayName = "DialogContent";
 
 const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (

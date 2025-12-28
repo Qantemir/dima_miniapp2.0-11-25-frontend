@@ -129,9 +129,13 @@ export const CatalogPage = () => {
     }
   }, [storeStatus?.is_sleep_mode, storeStatus?.sleep_message, queryClient, addingToCart]);
 
-  const handleHelp = useCallback(() => setHelpDialogOpen(true), []);
+  const handleHelp = useCallback(() => {
+    setHelpDialogOpen(true);
+  }, []);
   
-  const handleOpenCart = useCallback(() => setCartDialogOpen(true), []);
+  const handleOpenCart = useCallback(() => {
+    setCartDialogOpen(true);
+  }, []);
   const handleSelectAllCategories = useCallback(() => setSelectedCategory(null), []);
   const handleSelectCategory = useCallback((categoryId: string) => setSelectedCategory(categoryId), []);
 

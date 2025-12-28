@@ -58,9 +58,20 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, children, ...props }, ref) => {
+    // Если children undefined или null, используем пустой фрагмент
+    const safeChildren = children === undefined || children === null ? null : children;
+    
     const Comp = asChild ? Slot : "button";
-    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
+    return (
+      <Comp 
+        className={cn(buttonVariants({ variant, size, className }))} 
+        ref={ref} 
+        {...props}
+      >
+        {safeChildren}
+      </Comp>
+    );
   },
 );
 Button.displayName = "Button";
