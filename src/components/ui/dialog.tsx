@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Dialog as HeadlessDialog, Transition } from "@headlessui/react";
+import { Dialog as HeadlessDialog } from "@headlessui/react";
 import { X } from "@/components/icons";
 
 import { cn } from "@/lib/utils";
@@ -16,8 +16,6 @@ const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
     return null;
   }
   
-  // Если Dialog закрыт, не рендерим ничего (HeadlessUI все равно может пытаться рендерить)
-  // Но HeadlessUI требует, чтобы компонент был в DOM для анимаций, поэтому рендерим всегда
   return (
     <HeadlessDialog open={open} onClose={() => onOpenChange(false)} className="relative z-50">
       {children}
@@ -68,42 +66,22 @@ const DialogContent = React.forwardRef<
   
   return (
     <>
-      <Transition.Child
-        as={React.Fragment}
-        enter="ease-out duration-200"
-        enterFrom="opacity-0"
-        enterTo="opacity-100"
-        leave="ease-in duration-200"
-        leaveFrom="opacity-100"
-        leaveTo="opacity-0"
-      >
-        <HeadlessDialog.Overlay className="fixed inset-0 bg-black/80" />
-      </Transition.Child>
+      <HeadlessDialog.Overlay className="fixed inset-0 bg-black/80" />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <Transition.Child
-          as={React.Fragment}
-          enter="ease-out duration-200"
-          enterFrom="opacity-0 scale-95"
-          enterTo="opacity-100 scale-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100 scale-100"
-          leaveTo="opacity-0 scale-95"
+        <HeadlessDialog.Panel
+          ref={ref}
+          className={cn(
+            "relative z-50 grid w-full max-w-lg gap-4 border bg-background p-6 shadow-lg sm:rounded-lg",
+            className,
+          )}
+          {...props}
         >
-          <HeadlessDialog.Panel
-            ref={ref}
-            className={cn(
-              "relative z-50 grid w-full max-w-lg gap-4 border bg-background p-6 shadow-lg sm:rounded-lg",
-              className,
-            )}
-            {...props}
-          >
-            {safeChildren}
-            <HeadlessDialog.Button className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-            </HeadlessDialog.Button>
-          </HeadlessDialog.Panel>
-        </Transition.Child>
+          {safeChildren}
+          <HeadlessDialog.Button className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </HeadlessDialog.Button>
+        </HeadlessDialog.Panel>
       </div>
     </>
   );
