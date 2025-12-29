@@ -76,8 +76,9 @@ export const ProductCard = ({
   }
   
   const currentPrice = product?.price ?? 0; // Используем цену товара
-  const isAvailable = selectedVariant?.available ?? product?.available ?? false;
   const availableQuantity = selectedVariant?.quantity ?? 0;
+  // Доступность завязана на фактическое количество, чтобы исключить “залипание” флага available
+  const isAvailable = availableQuantity > 0 && (selectedVariant?.available ?? product?.available ?? false);
 
   const handleAddToCart = () => {
     if (mustSelectVariant) {
