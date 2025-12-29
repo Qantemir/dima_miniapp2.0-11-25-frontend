@@ -16,6 +16,8 @@ const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
     return null;
   }
   
+  // Если Dialog закрыт, не рендерим ничего (HeadlessUI все равно может пытаться рендерить)
+  // Но HeadlessUI требует, чтобы компонент был в DOM для анимаций, поэтому рендерим всегда
   return (
     <HeadlessDialog open={open} onClose={() => onOpenChange(false)} className="relative z-50">
       {children}
@@ -54,7 +56,15 @@ const DialogContent = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, ...props }, ref) => {
   // Если children undefined или null, используем пустой фрагмент
-  const safeChildren = children === undefined || children === null ? null : children;
+  // Также фильтруем undefined из массива children, если это массив
+  let safeChildren: React.ReactNode = null;
+  if (children === undefined || children === null) {
+    safeChildren = null;
+  } else if (Array.isArray(children)) {
+    safeChildren = children.filter(child => child !== undefined && child !== null);
+  } else {
+    safeChildren = children;
+  }
   
   return (
     <>
@@ -100,34 +110,58 @@ const DialogContent = React.forwardRef<
 });
 DialogContent.displayName = "DialogContent";
 
-const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex flex-col space-y-1.5 text-center sm:text-left", className)} {...props} />
-);
+const DialogHeader = ({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
+  const safeChildren = children === undefined || children === null ? null : children;
+  return (
+    <div className={cn("flex flex-col space-y-1.5 text-center sm:text-left", className)} {...props}>
+      {safeChildren}
+    </div>
+  );
+};
 DialogHeader.displayName = "DialogHeader";
 
-const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)} {...props} />
-);
+const DialogFooter = ({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
+  const safeChildren = children === undefined || children === null ? null : children;
+  return (
+    <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)} {...props}>
+      {safeChildren}
+    </div>
+  );
+};
 DialogFooter.displayName = "DialogFooter";
 
 const DialogTitle = React.forwardRef<
   HTMLHeadingElement,
   React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
-  <HeadlessDialog.Title
-    ref={ref}
-    className={cn("text-lg font-semibold leading-none tracking-tight", className)}
-    {...props}
-  />
-));
+>(({ className, children, ...props }, ref) => {
+  const safeChildren = children === undefined || children === null ? null : children;
+  return (
+    <HeadlessDialog.Title
+      ref={ref}
+      className={cn("text-lg font-semibold leading-none tracking-tight", className)}
+      {...props}
+    >
+      {safeChildren}
+    </HeadlessDialog.Title>
+  );
+});
 DialogTitle.displayName = "DialogTitle";
 
 const DialogDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => (
-  <HeadlessDialog.Description ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
-));
+>(({ className, children, ...props }, ref) => {
+  const safeChildren = children === undefined || children === null ? null : children;
+  return (
+    <HeadlessDialog.Description 
+      ref={ref} 
+      className={cn("text-sm text-muted-foreground", className)} 
+      {...props}
+    >
+      {safeChildren}
+    </HeadlessDialog.Description>
+  );
+});
 DialogDescription.displayName = "DialogDescription";
 
 export {
