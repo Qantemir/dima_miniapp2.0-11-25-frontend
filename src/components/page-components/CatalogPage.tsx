@@ -129,11 +129,17 @@ export const CatalogPage = () => {
     }
   }, [storeStatus?.is_sleep_mode, storeStatus?.sleep_message, queryClient, addingToCart]);
 
-  const handleHelp = useCallback(() => {
+  const handleHelp = useCallback((e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    console.log('handleHelp called, setting helpDialogOpen to true');
     setHelpDialogOpen(true);
   }, []);
   
-  const handleOpenCart = useCallback(() => {
+  const handleOpenCart = useCallback((e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    console.log('handleOpenCart called, setting cartDialogOpen to true');
     setCartDialogOpen(true);
   }, []);
   const handleSelectAllCategories = useCallback(() => setSelectedCategory(null), []);
@@ -340,11 +346,21 @@ export const CatalogPage = () => {
         )}
       </section>
 
+      {console.log('CatalogPage render - cartDialogOpen:', cartDialogOpen, 'helpDialogOpen:', helpDialogOpen)}
       <CartDialog
         open={cartDialogOpen}
-        onOpenChange={setCartDialogOpen}
+        onOpenChange={(open) => {
+          console.log('CartDialog onOpenChange called with:', open);
+          setCartDialogOpen(open);
+        }}
       />
-      <HelpDialog open={helpDialogOpen} onOpenChange={setHelpDialogOpen} />
+      <HelpDialog 
+        open={helpDialogOpen} 
+        onOpenChange={(open) => {
+          console.log('HelpDialog onOpenChange called with:', open);
+          setHelpDialogOpen(open);
+        }} 
+      />
     </main>
     </>
   );

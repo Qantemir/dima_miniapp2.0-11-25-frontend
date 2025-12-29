@@ -15,6 +15,7 @@ interface HelpDialogProps {
 }
 
 export const HelpDialog = ({ open, onOpenChange }: HelpDialogProps) => {
+  console.log('HelpDialog rendered, open:', open);
   const handleClose = () => {
     if (onOpenChange) {
       onOpenChange(false);

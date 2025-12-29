@@ -24,6 +24,7 @@ interface CartDialogProps {
 }
 
 export const CartDialog = ({ open, onOpenChange }: CartDialogProps) => {
+  console.log('CartDialog rendered, open:', open);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: cart, isLoading } = useCart(open);
