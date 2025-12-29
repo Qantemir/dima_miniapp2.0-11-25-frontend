@@ -216,3 +216,4 @@ export const HelpDialog = ({ open, onOpenChange }: HelpDialogProps) => {
       </div>
     </Modal>
   );
+};
