@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { HoverScale } from '@/components/animations';
 import { getProductImageUrl } from '@/lib/api';
-import type { Product, ProductVariant } from '@/types/api';
+import type { Product } from '@/types/api';
 
 interface ProductCardProps {
   product: Product;
@@ -25,12 +25,17 @@ export const ProductCard = ({
   isAdding = false,
 }: ProductCardProps) => {
   const [quantity, setQuantity] = useState(1);
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
-    product.variants?.[0] || null
+  // Храним только id, чтобы выбранная вариация автоматически обновлялась
+  // при приходе свежих данных каталога (кол-во, доступность).
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
+    product.variants?.[0]?.id ?? null
   );
   const [imageError, setImageError] = useState(false);
 
   const hasVariants = product?.variants && Array.isArray(product.variants) && product.variants.length > 0;
+  const selectedVariant = hasVariants
+    ? product.variants?.find(v => v?.id === selectedVariantId) ?? product.variants?.[0] ?? null
+    : null;
   const mustSelectVariant = !selectedVariant;
   // Используем только images массив (первый элемент - основное изображение)
   const imageSource = product?.images?.[0];
@@ -147,7 +152,7 @@ export const ProductCard = ({
                   <button
                     key={variant.id}
                     onClick={() => {
-                      setSelectedVariant(variant);
+                      setSelectedVariantId(variant.id);
                       setQuantity(1);
                     }}
                     disabled={!variant.available || isOutOfStock}

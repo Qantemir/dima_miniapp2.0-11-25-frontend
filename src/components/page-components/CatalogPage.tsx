@@ -16,7 +16,7 @@ import { useAdminView } from '@/contexts/AdminViewContext';
 import { ADMIN_IDS, type Cart } from '@/types/api';
 import { Seo } from '@/components/Seo';
 import { useStoreStatus } from '@/contexts/StoreStatusContext';
-import { useCatalog } from '@/hooks/useCatalog';
+import { useCatalog, CATALOG_QUERY_KEY } from '@/hooks/useCatalog';
 import { useCart, CART_QUERY_KEY } from '@/hooks/useCart';
 import { useQueryClient } from '@tanstack/react-query';
 import { AnimatedList, AnimatedItem } from '@/components/animations';
@@ -114,9 +114,12 @@ export const CatalogPage = () => {
         variant_id: variantId,
         quantity,
       });
-      
+
       // Обновляем корзину с реальными данными - этого достаточно
       queryClient.setQueryData(CART_QUERY_KEY, updatedCart);
+      // Сразу обновляем/перезагружаем каталог, чтобы отобразить новое количество
+      // и скрыть товар, если это была последняя вариация
+      queryClient.invalidateQueries({ queryKey: CATALOG_QUERY_KEY }).catch(() => {});
       setAddSuccess(true);
       setTimeout(() => setAddSuccess(false), 2000);
     } catch (error) {
