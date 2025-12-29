@@ -78,10 +78,9 @@ export const ProductCard = ({
   const currentPrice = product?.price ?? 0; // Используем цену товара
   const rawQuantity = selectedVariant?.quantity;
   const availableQuantity =
-    typeof rawQuantity === 'number' && rawQuantity >= 0 ? rawQuantity : Number.POSITIVE_INFINITY;
-  // Доступность: если количество не указано, считаем бесконечным, но уважаем флаг available
-  const isAvailable =
-    (selectedVariant?.available ?? product?.available ?? false) && availableQuantity > 0;
+    typeof rawQuantity === 'number' && rawQuantity > 0 ? rawQuantity : Number.POSITIVE_INFINITY;
+  // Доступность берём из флага available; количество не блокирует, если не задано
+  const isAvailable = (selectedVariant?.available ?? product?.available ?? false);
 
   const handleAddToCart = () => {
     if (mustSelectVariant) {
@@ -206,7 +205,7 @@ export const ProductCard = ({
                   variant="ghost"
                 onClick={increment}
                   className="h-7 w-7 sm:h-8 sm:w-8 rounded-md"
-                disabled={hasVariants && Number.isFinite(availableQuantity) && quantity >= availableQuantity}
+          disabled={hasVariants && Number.isFinite(availableQuantity) && quantity >= availableQuantity}
                 >
                   <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </Button>
@@ -216,7 +215,7 @@ export const ProductCard = ({
                 onClick={handleAddToCart} 
                 size="sm" 
                 className="px-3 sm:px-4 text-xs sm:text-sm font-medium h-9 sm:h-10 shadow-sm min-w-[90px] sm:min-w-[100px]"
-                disabled={(Number.isFinite(availableQuantity) && quantity > availableQuantity) || isAdding}
+                disabled={isAdding}
               >
                 {isAdding ? 'Добавление...' : 'В корзину'}
               </Button>

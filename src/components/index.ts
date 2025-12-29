@@ -28,9 +28,9 @@ export * from './icons';
 // UI компоненты (re-export из ui/)
 export { Button } from './ui/button';
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './ui/card';
-export { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+export { Dialog, DialogPortal, DialogOverlay, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 export { Input } from './ui/input';
 export { Label } from './ui/label';
 export { Skeleton } from './ui/skeleton';
-export { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
+export { AlertDialog, AlertDialogPortal, AlertDialogOverlay, AlertDialogTrigger, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 
