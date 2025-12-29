@@ -1,3 +1,5 @@
+ 'use client';
+
 import * as React from "react";
 import { Dialog as HeadlessDialog } from "@headlessui/react";
 import { X } from "@/components/icons";

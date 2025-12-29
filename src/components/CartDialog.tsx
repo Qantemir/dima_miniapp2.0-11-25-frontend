@@ -1,3 +1,5 @@
+ 'use client';
+
 import { useMemo, useCallback } from 'react';
 import { useNavigate } from '@/lib/router';
 import { motion, AnimatePresence } from 'framer-motion';
