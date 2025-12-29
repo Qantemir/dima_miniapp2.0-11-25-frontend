@@ -117,6 +117,35 @@ export const CatalogPage = () => {
 
       // Обновляем корзину с реальными данными - этого достаточно
       queryClient.setQueryData(CART_QUERY_KEY, updatedCart);
+
+      // Оптимистично уменьшаем остатки вариации в каталоге, чтобы товар скрывался быстрее
+      queryClient.setQueryData(CATALOG_QUERY_KEY, (prev) => {
+        if (!prev) return prev;
+        const next = { ...prev, products: [...prev.products] };
+        const pIndex = next.products.findIndex(p => p.id === productId);
+        if (pIndex === -1) return prev;
+        const product = next.products[pIndex];
+        if (!product?.variants || !Array.isArray(product.variants)) return prev;
+
+        const variants = product.variants.map(v => ({ ...v }));
+        const vIndex = variants.findIndex(v => v?.id === variantId);
+        if (vIndex === -1) return prev;
+
+        const v = variants[vIndex];
+        if (typeof v.quantity === 'number') {
+          const newQty = Math.max(0, v.quantity - quantity);
+          v.quantity = newQty;
+          if (newQty === 0) {
+            v.available = false;
+          }
+        }
+
+        const anyAvailable = variants.some(vr => (vr.available ?? false) && ((vr.quantity ?? 0) > 0));
+        const nextProduct = { ...product, variants, available: product.available && anyAvailable };
+        next.products[pIndex] = nextProduct;
+        return next;
+      });
+
       // Сразу обновляем/перезагружаем каталог, чтобы отобразить новое количество
       // и скрыть товар, если это была последняя вариация
       queryClient.invalidateQueries({ queryKey: CATALOG_QUERY_KEY }).catch(() => {});
