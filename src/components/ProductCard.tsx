@@ -76,9 +76,12 @@ export const ProductCard = ({
   }
   
   const currentPrice = product?.price ?? 0; // Используем цену товара
-  const availableQuantity = selectedVariant?.quantity ?? 0;
-  // Доступность завязана на фактическое количество, чтобы исключить “залипание” флага available
-  const isAvailable = availableQuantity > 0 && (selectedVariant?.available ?? product?.available ?? false);
+  const rawQuantity = selectedVariant?.quantity;
+  const availableQuantity =
+    typeof rawQuantity === 'number' && rawQuantity >= 0 ? rawQuantity : Number.POSITIVE_INFINITY;
+  // Доступность: если количество не указано, считаем бесконечным, но уважаем флаг available
+  const isAvailable =
+    (selectedVariant?.available ?? product?.available ?? false) && availableQuantity > 0;
 
   const handleAddToCart = () => {
     if (mustSelectVariant) {
@@ -95,12 +98,14 @@ export const ProductCard = ({
 
   const increment = () => {
     if (selectedVariant) {
-      // Если есть вариация, проверяем доступное количество
-      if (availableQuantity > 0 && availableQuantity > quantity) {
-        setQuantity(prev => Math.min(prev + 1, availableQuantity));
+      if (Number.isFinite(availableQuantity)) {
+        if (availableQuantity > quantity) {
+          setQuantity(prev => Math.min(prev + 1, availableQuantity));
+        }
+      } else {
+        setQuantity(prev => prev + 1);
       }
     } else {
-      // Если нет вариации, просто увеличиваем (но это не должно происходить, т.к. товар без вариаций недоступен)
       setQuantity(prev => prev + 1);
     }
   };
@@ -199,9 +204,9 @@ export const ProductCard = ({
                 <Button
                   size="icon"
                   variant="ghost"
-                  onClick={increment}
+                onClick={increment}
                   className="h-7 w-7 sm:h-8 sm:w-8 rounded-md"
-                  disabled={hasVariants && quantity >= availableQuantity}
+                disabled={hasVariants && Number.isFinite(availableQuantity) && quantity >= availableQuantity}
                 >
                   <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </Button>
@@ -211,7 +216,7 @@ export const ProductCard = ({
                 onClick={handleAddToCart} 
                 size="sm" 
                 className="px-3 sm:px-4 text-xs sm:text-sm font-medium h-9 sm:h-10 shadow-sm min-w-[90px] sm:min-w-[100px]"
-                disabled={quantity > availableQuantity || isAdding}
+                disabled={(Number.isFinite(availableQuantity) && quantity > availableQuantity) || isAdding}
               >
                 {isAdding ? 'Добавление...' : 'В корзину'}
               </Button>
