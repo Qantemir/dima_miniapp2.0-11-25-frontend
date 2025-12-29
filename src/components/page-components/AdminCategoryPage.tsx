@@ -173,18 +173,9 @@ export const AdminCategoryPage = () => {
             return next;
           });
           // Инвалидируем для синхронизации с сервером в фоне (без автоматического refetch)
-          queryClient.invalidateQueries({ 
-            queryKey: queryKeys.adminCategory(categoryId!),
-            refetchType: 'none' // Не делать автоматический refetch
-          });
-          queryClient.invalidateQueries({ 
-            queryKey: queryKeys.adminCatalog,
-            refetchType: 'none' // Не делать автоматический refetch
-          });
-          queryClient.invalidateQueries({ 
-            queryKey: queryKeys.catalog,
-            refetchType: 'none' // Не делать автоматический refetch
-          });
+          queryClient.invalidateQueries({ queryKey: queryKeys.adminCategory(categoryId!) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.adminCatalog });
+          queryClient.invalidateQueries({ queryKey: queryKeys.catalog });
         } catch {
           // Откатываем изменения при ошибке
           setDeletingProductIds(prev => {
@@ -452,18 +443,9 @@ export const AdminCategoryPage = () => {
       
       // Инвалидируем кэш без автоматического refetch (данные уже обновлены через setQueryData выше)
       await Promise.all([
-        queryClient.invalidateQueries({ 
-          queryKey: queryKeys.adminCategory(categoryId!),
-          refetchType: 'none' // Не делать автоматический refetch
-        }),
-        queryClient.invalidateQueries({ 
-          queryKey: queryKeys.adminCatalog,
-          refetchType: 'none' // Не делать автоматический refetch
-        }),
-        queryClient.invalidateQueries({ 
-          queryKey: queryKeys.catalog,
-          refetchType: 'none' // Не делать автоматический refetch
-        }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.adminCategory(categoryId!) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.adminCatalog }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.catalog }),
       ]);
     } catch (error) {
       // Откатываем изменения при ошибке

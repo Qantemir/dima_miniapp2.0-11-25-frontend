@@ -177,14 +177,8 @@ export const AdminCatalogPage = () => {
       // НЕ делаем refetch, так как данные уже обновлены через setQueryData выше
       const detailQueryKey = ['admin-category', createdOrUpdatedCategory.id];
       await Promise.all([
-        queryClient.invalidateQueries({ 
-          queryKey: ['admin-catalog'],
-          refetchType: 'none' // Не делать автоматический refetch
-        }),
-        queryClient.invalidateQueries({ 
-          queryKey: ['catalog'],
-          refetchType: 'none' // Не делать автоматический refetch
-        }),
+        queryClient.invalidateQueries({ queryKey: ['admin-catalog'] }),
+        queryClient.invalidateQueries({ queryKey: ['catalog'] }),
         queryClient.removeQueries({ queryKey: detailQueryKey, exact: true }),
       ]);
     } catch (error) {
@@ -254,14 +248,8 @@ export const AdminCatalogPage = () => {
       // Данные уже обновлены оптимистично выше, поэтому refetch не нужен
       const detailQueryKey = ['admin-category', deletedCategory.id];
       await Promise.all([
-        queryClient.invalidateQueries({ 
-          queryKey: ['admin-catalog'],
-          refetchType: 'none' // Не делать автоматический refetch
-        }),
-        queryClient.invalidateQueries({ 
-          queryKey: ['catalog'],
-          refetchType: 'none' // Не делать автоматический refetch
-        }),
+        queryClient.invalidateQueries({ queryKey: ['admin-catalog'] }),
+        queryClient.invalidateQueries({ queryKey: ['catalog'] }),
         queryClient.removeQueries({ queryKey: detailQueryKey, exact: true }),
       ]);
     } catch (error) {
