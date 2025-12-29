@@ -1,3 +1,5 @@
+ 'use client';
+
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from '@/lib/router';
 import { getUserId, isAdmin, showBackButton, hideBackButton } from '@/lib/telegram';

@@ -1,4 +1,4 @@
- 'use client';
+'use client';
 
 import * as React from "react";
 import { Dialog as HeadlessDialog } from "@headlessui/react";
@@ -12,16 +12,32 @@ interface DialogProps {
   children: React.ReactNode;
 }
 
+type DialogContextValue = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
+
+const DialogContext = React.createContext<DialogContextValue | null>(null);
+
+const useDialogContext = () => {
+  const ctx = React.useContext(DialogContext);
+  if (!ctx) {
+    throw new Error("Dialog components must be used within <Dialog>");
+  }
+  return ctx;
+};
+
 const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
-  // Если children undefined или null, возвращаем null
   if (children === undefined || children === null) {
     return null;
   }
-  
+
   return (
-    <HeadlessDialog open={open} onClose={() => onOpenChange(false)} className="relative z-50">
-      {children}
-    </HeadlessDialog>
+    <DialogContext.Provider value={{ open, onOpenChange }}>
+      <HeadlessDialog open={open} onClose={() => onOpenChange(false)} className="relative z-50">
+        {children}
+      </HeadlessDialog>
+    </DialogContext.Provider>
   );
 };
 
@@ -30,23 +46,35 @@ const DialogTrigger = React.forwardRef<
   React.ButtonHTMLAttributes<HTMLButtonElement> & {
     asChild?: boolean;
   }
->(({ asChild, children, ...props }, ref) => {
-  // Если children undefined или null, возвращаем null
+>(({ asChild, children, onClick, ...props }, ref) => {
+  const { onOpenChange } = useDialogContext();
+
   if (children === undefined || children === null) {
     return null;
   }
-  
+
+  const handleClick: React.MouseEventHandler<HTMLButtonElement> = (event) => {
+    onClick?.(event);
+    if (!event.defaultPrevented) {
+      onOpenChange(true);
+    }
+  };
+
   if (asChild && React.isValidElement(children)) {
-    return (
-      <HeadlessDialog.Button as={React.Fragment}>
-        {React.cloneElement(children, { ref, ...props })}
-      </HeadlessDialog.Button>
-    );
+    return React.cloneElement(children, {
+      ref,
+      ...props,
+      onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+        children.props.onClick?.(event);
+        handleClick(event);
+      },
+    });
   }
+
   return (
-    <HeadlessDialog.Button ref={ref} {...props}>
+    <button ref={ref} {...props} onClick={handleClick}>
       {children}
-    </HeadlessDialog.Button>
+    </button>
   );
 });
 DialogTrigger.displayName = "DialogTrigger";
@@ -55,8 +83,8 @@ const DialogContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, ...props }, ref) => {
-  // Если children undefined или null, используем пустой фрагмент
-  // Также фильтруем undefined из массива children, если это массив
+  const { onOpenChange } = useDialogContext();
+
   let safeChildren: React.ReactNode = null;
   if (children === undefined || children === null) {
     safeChildren = null;
@@ -65,7 +93,7 @@ const DialogContent = React.forwardRef<
   } else {
     safeChildren = children;
   }
-  
+
   return (
     <>
       <HeadlessDialog.Overlay className="fixed inset-0 bg-black/80" />
@@ -79,10 +107,14 @@ const DialogContent = React.forwardRef<
           {...props}
         >
           {safeChildren}
-          <HeadlessDialog.Button className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
+          >
             <X className="h-4 w-4" />
             <span className="sr-only">Close</span>
-          </HeadlessDialog.Button>
+          </button>
         </HeadlessDialog.Panel>
       </div>
     </>
