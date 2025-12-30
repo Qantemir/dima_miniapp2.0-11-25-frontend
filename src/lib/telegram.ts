@@ -356,10 +356,24 @@ export const showMainButton = (
   const tg = getTelegram();
   if (!hasTelegramInitContext(tg)) return false;
 
+  // Валидация: текст обязателен для кнопки
+  if (!text || text.trim().length === 0) {
+    console.warn('showMainButton: текст кнопки не может быть пустым');
+    return false;
+  }
+
   // Удаляем предыдущий обработчик, если он был зарегистрирован
   detachMainButtonHandler(tg);
   activeMainButtonHandler = onClick;
 
+  // Сначала скрываем кнопку, чтобы избежать ошибок
+  try {
+    tg.MainButton.hide();
+  } catch {
+    // Игнорируем ошибки при скрытии
+  }
+
+  // Устанавливаем параметры кнопки
   tg.MainButton.setText(text);
   if (options?.color) tg.MainButton.color = options.color;
   if (options?.textColor) tg.MainButton.textColor = options.textColor;
@@ -377,11 +391,18 @@ export const hideMainButton = () => {
   detachMainButtonHandler(tg);
 
   try {
+    // Сначала скрываем кнопку, затем очищаем текст
     tg.MainButton.hideProgress();
     tg.MainButton.disable();
     tg.MainButton.hide();
+    // Устанавливаем минимальный текст перед очисткой, чтобы избежать ошибки
+    tg.MainButton.setParams({ 
+      is_visible: false, 
+      is_active: false,
+      text: ' ' // Пробел вместо пустой строки
+    });
+    // Теперь можно безопасно очистить текст
     tg.MainButton.setText('');
-    tg.MainButton.setParams({ is_visible: false, is_active: false });
   } catch {
     // Игнорируем ошибки, если что-то пошло не так
   }

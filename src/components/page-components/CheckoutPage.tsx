@@ -195,36 +195,34 @@ export const CheckoutPage = () => {
       >
       <div className="px-4 py-5 sm:px-6 sm:py-6 space-y-6">
         {/* Ссылка на оплату */}
-        {process.env.NEXT_PUBLIC_PAYMENT_LINK && (
-          <Card className="p-4 sm:p-5 border-primary/20 bg-primary/5">
-            <div className="space-y-3">
-              <div>
-                <h3 className="text-base sm:text-lg font-semibold text-foreground">Оплата заказа</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  Перейдите по ссылке для оплаты заказа через Kaspi Pay или другой платёжный сервис
-                </p>
-              </div>
-              <Button
-                asChild
-                className="w-full h-11 sm:h-12 text-base font-semibold"
-                disabled={submitting}
-              >
-                <a
-                  href={process.env.NEXT_PUBLIC_PAYMENT_LINK}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => {
-                    if (submitting) {
-                      e.preventDefault();
-                    }
-                  }}
-                >
-                  Перейти к оплате
-                </a>
-              </Button>
+        <Card className="p-4 sm:p-5 border-primary/20 bg-primary/5">
+          <div className="space-y-3">
+            <div>
+              <h3 className="text-base sm:text-lg font-semibold text-foreground">Оплата заказа</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                Перейдите по ссылке для оплаты заказа через Kaspi Pay или другой платёжный сервис
+              </p>
             </div>
-          </Card>
-        )}
+            <Button
+              asChild
+              className="w-full h-11 sm:h-12 text-base font-semibold"
+              disabled={submitting || !process.env.NEXT_PUBLIC_PAYMENT_LINK}
+            >
+              <a
+                href={process.env.NEXT_PUBLIC_PAYMENT_LINK || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => {
+                  if (submitting || !process.env.NEXT_PUBLIC_PAYMENT_LINK) {
+                    e.preventDefault();
+                  }
+                }}
+              >
+                Перейти к оплате
+              </a>
+            </Button>
+          </div>
+        </Card>
 
         <div className="space-y-5">
           <div className="space-y-2.5">

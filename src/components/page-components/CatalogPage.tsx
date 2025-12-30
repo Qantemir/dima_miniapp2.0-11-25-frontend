@@ -107,6 +107,12 @@ export const CatalogPage = () => {
       return;
     }
 
+    // variant_id теперь обязателен
+    if (!variantId) {
+      toast.error('Ошибка: необходимо выбрать вариацию (вкус)');
+      return;
+    }
+
     setAddingToCart(requestKey);
     try {
       const updatedCart = await api.addToCart({

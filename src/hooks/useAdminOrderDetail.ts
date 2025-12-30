@@ -68,14 +68,28 @@ export const useAdminOrderDetail = (orderId?: string) => {
     setStatusDialogOpen(false);
 
     try {
-      const updatedOrder = await api.updateOrderStatus(order.id, { 
+      // Формируем данные для запроса
+      const updateData: { status: OrderStatus; rejection_reason?: string } = {
         status: targetStatus,
-        rejection_reason: rejectionReason,
-      });
+      };
+      
+      // Добавляем причину отказа только если она не пустая
+      if (targetStatus === 'отказано') {
+        if (!rejectionReason || rejectionReason.trim().length === 0) {
+          toast.error('Необходимо указать причину отказа');
+          setStatusDialogOpen(true);
+          setUpdating(false);
+          return;
+        }
+        updateData.rejection_reason = rejectionReason.trim();
+      }
+
+      const updatedOrder = await api.updateOrderStatus(order.id, updateData);
       setOrder(updatedOrder);
       toast.success('Статус заказа обновлён');
-    } catch (error) {
-      toast.error('Ошибка при обновлении статуса');
+    } catch (error: any) {
+      const errorMessage = error?.message || error?.detail || 'Ошибка при обновлении статуса';
+      toast.error(errorMessage);
       setStatusDialogOpen(true);
     } finally {
       setUpdating(false);

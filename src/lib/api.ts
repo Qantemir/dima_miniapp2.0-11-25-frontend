@@ -219,17 +219,15 @@ class ApiClient {
 
   async addToCart(data: {
     product_id: string;
-    variant_id?: string;
+    variant_id: string;
     quantity: number;
   }): Promise<Cart> {
-    // Оптимизированная сериализация - создаем объект только с нужными полями
-    const payload: Record<string, string | number> = {
+    // variant_id теперь обязателен в схеме бэкенда
+    const payload = {
       product_id: data.product_id,
+      variant_id: data.variant_id,
       quantity: data.quantity,
     };
-    if (data.variant_id) {
-      payload.variant_id = data.variant_id;
-    }
     return this.request<Cart>('/cart', {
       method: 'POST',
       body: JSON.stringify(payload),
