@@ -31,6 +31,7 @@ export const AdminOrderDetailPage = () => {
     pendingStatus,
     statusDialogOpen,
     deleteDialogOpen,
+    savedRejectionReason,
     receiptUrl,
     shortOrderId,
     createdAtLabel,
@@ -86,7 +87,8 @@ export const AdminOrderDetailPage = () => {
         pendingStatus={pendingStatus}
         statusLabels={STATUS_LABELS}
         updating={updating}
-        onConfirm={() => confirmStatusChange()}
+        initialRejectionReason={savedRejectionReason}
+        onConfirm={confirmStatusChange}
         onOpenChange={handleStatusDialogChange}
       />
 

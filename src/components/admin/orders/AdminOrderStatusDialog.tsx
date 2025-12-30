@@ -18,6 +18,7 @@ interface AdminOrderStatusDialogProps {
   pendingStatus: OrderStatus | null;
   statusLabels: Record<OrderStatus, string>;
   updating: boolean;
+  initialRejectionReason?: string;
   onConfirm: (rejectionReason?: string) => void;
   onOpenChange: (open: boolean) => void;
 }
@@ -27,17 +28,25 @@ export const AdminOrderStatusDialog = ({
   pendingStatus,
   statusLabels,
   updating,
+  initialRejectionReason = '',
   onConfirm,
   onOpenChange,
 }: AdminOrderStatusDialogProps) => {
   const [rejectionReason, setRejectionReason] = useState('');
 
-  // Сбрасываем причину отказа при закрытии или смене статуса
+  // Восстанавливаем сохраненную причину отказа при открытии диалога
   useEffect(() => {
-    if (!open) {
+    if (open && pendingStatus === 'отказано') {
+      // Восстанавливаем только если поле пустое и есть сохраненная причина
+      if (!rejectionReason && initialRejectionReason) {
+        setRejectionReason(initialRejectionReason);
+      }
+    } else if (!open) {
       setRejectionReason('');
     }
-  }, [open, pendingStatus]);
+    // Не добавляем rejectionReason в зависимости, чтобы не перезаписывать ввод пользователя
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, pendingStatus, initialRejectionReason]);
 
   const requiresReason = pendingStatus === 'отказано';
   const canConfirm = pendingStatus && (!requiresReason || rejectionReason.trim().length > 0);

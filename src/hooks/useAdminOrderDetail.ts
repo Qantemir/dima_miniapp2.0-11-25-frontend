@@ -19,33 +19,44 @@ export const useAdminOrderDetail = (orderId?: string) => {
   const [pendingStatus, setPendingStatus] = useState<OrderStatus | null>(null);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
-  const loadOrder = useCallback(async () => {
-    if (!orderId) {
-      setLoading(false);
-      return;
-    }
-    try {
-      const data = await api.getAdminOrder(orderId);
-      setOrder(data);
-    } catch (error) {
-      toast.error('Ошибка загрузки заказа');
-      navigate('/admin');
-    } finally {
-      setLoading(false);
-    }
-  }, [orderId, navigate]);
+  const [savedRejectionReason, setSavedRejectionReason] = useState<string>('');
 
   useEffect(() => {
     if (!isAuthorized) {
       return;
     }
-    if (orderId) {
-      loadOrder();
-    } else {
+    if (!orderId) {
       setLoading(false);
+      return;
     }
-  }, [isAuthorized, orderId, loadOrder]);
+
+    let cancelled = false;
+
+    const loadOrder = async () => {
+      try {
+        setLoading(true);
+        const data = await api.getAdminOrder(orderId);
+        if (!cancelled) {
+          setOrder(data);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          toast.error('Ошибка загрузки заказа');
+          navigate('/admin');
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadOrder();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthorized, orderId, navigate]);
 
   const handleStatusSelect = useCallback(
     (newStatus: OrderStatus) => {
@@ -53,6 +64,10 @@ export const useAdminOrderDetail = (orderId?: string) => {
         return;
       }
       setPendingStatus(newStatus);
+      // Сбрасываем сохраненную причину отказа при выборе нового статуса
+      if (newStatus !== 'отказано') {
+        setSavedRejectionReason('');
+      }
       setStatusDialogOpen(true);
     },
     [order],
@@ -64,8 +79,20 @@ export const useAdminOrderDetail = (orderId?: string) => {
     }
 
     const targetStatus = pendingStatus;
+    
+    // Валидация причины отказа ДО закрытия диалога
+    if (targetStatus === 'отказано') {
+      if (!rejectionReason || rejectionReason.trim().length === 0) {
+        toast.error('Необходимо указать причину отказа');
+        setUpdating(false);
+        return;
+      }
+      // Сохраняем причину отказа на случай ошибки
+      setSavedRejectionReason(rejectionReason.trim());
+    }
+
     setUpdating(true);
-    setStatusDialogOpen(false);
+    // НЕ закрываем диалог здесь, чтобы сохранить введенную причину отказа
 
     try {
       // Формируем данные для запроса
@@ -73,27 +100,24 @@ export const useAdminOrderDetail = (orderId?: string) => {
         status: targetStatus,
       };
       
-      // Добавляем причину отказа только если она не пустая
-      if (targetStatus === 'отказано') {
-        if (!rejectionReason || rejectionReason.trim().length === 0) {
-          toast.error('Необходимо указать причину отказа');
-          setStatusDialogOpen(true);
-          setUpdating(false);
-          return;
-        }
+      // Добавляем причину отказа
+      if (targetStatus === 'отказано' && rejectionReason) {
         updateData.rejection_reason = rejectionReason.trim();
       }
 
       const updatedOrder = await api.updateOrderStatus(order.id, updateData);
       setOrder(updatedOrder);
       toast.success('Статус заказа обновлён');
+      // Закрываем диалог только после успешного обновления
+      setStatusDialogOpen(false);
+      setPendingStatus(null);
+      setSavedRejectionReason('');
     } catch (error: any) {
       const errorMessage = error?.message || error?.detail || 'Ошибка при обновлении статуса';
       toast.error(errorMessage);
-      setStatusDialogOpen(true);
+      // Диалог остается открытым, причина отказа сохранена
     } finally {
       setUpdating(false);
-      setPendingStatus(null);
     }
   }, [order, pendingStatus, updating]);
 
@@ -102,6 +126,7 @@ export const useAdminOrderDetail = (orderId?: string) => {
       setStatusDialogOpen(open);
       if (!open && !updating) {
         setPendingStatus(null);
+        setSavedRejectionReason('');
       }
     },
     [updating],
@@ -201,6 +226,7 @@ export const useAdminOrderDetail = (orderId?: string) => {
     pendingStatus,
     statusDialogOpen,
     deleteDialogOpen,
+    savedRejectionReason,
     receiptUrl,
     shortOrderId,
     createdAtLabel,

@@ -1,13 +1,14 @@
 // Утилита для совместимости роутинга между React Router и Next.js
 'use client';
 
+import { useCallback } from 'react';
 import { useRouter, usePathname, useParams as useNextParams } from 'next/navigation';
 
 // Хук для навигации (замена useNavigate из react-router)
 export function useNavigate() {
   const router = useRouter();
   
-  return (to: string | number, options?: { replace?: boolean }) => {
+  return useCallback((to: string | number, options?: { replace?: boolean }) => {
     if (!router) {
       console.warn('Router not available');
       return;
@@ -32,7 +33,7 @@ export function useNavigate() {
     } catch (error) {
       console.error('Navigation error:', error);
     }
-  };
+  }, [router]);
 }
 
 // Хук для получения текущего пути (замена useLocation из react-router)
