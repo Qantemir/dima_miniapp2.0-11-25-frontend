@@ -44,7 +44,6 @@ export const AdminOrderDetailPage = () => {
     handleDeleteClick,
     confirmDeleteOrder,
     handleDeleteDialogChange,
-    openChatWithCustomer,
   } = useAdminOrderDetail(orderId);
 
   if (loading) {
@@ -78,7 +77,6 @@ export const AdminOrderDetailPage = () => {
         updating={updating}
         onStatusSelect={handleStatusSelect}
         onBack={goBack}
-        onChat={openChatWithCustomer}
         onDelete={handleDeleteClick}
       />
 

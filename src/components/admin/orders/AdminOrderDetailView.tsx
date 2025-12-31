@@ -18,7 +18,6 @@ interface AdminOrderDetailViewProps {
   updating: boolean;
   onStatusSelect: (status: OrderStatus) => void;
   onBack: () => void;
-  onChat?: () => void;
   onDelete?: () => void;
 }
 
@@ -32,7 +31,6 @@ export const AdminOrderDetailView = ({
   updating,
   onStatusSelect,
   onBack,
-  onChat,
   onDelete,
 }: AdminOrderDetailViewProps) => (
   <main className="min-h-screen bg-background pb-6" role="main">
@@ -40,7 +38,6 @@ export const AdminOrderDetailView = ({
       shortOrderId={shortOrderId} 
       createdAt={createdAtLabel} 
       onBack={onBack}
-      onChat={onChat}
       onDelete={onDelete}
     />
 
