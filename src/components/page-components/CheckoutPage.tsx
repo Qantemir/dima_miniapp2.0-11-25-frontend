@@ -121,7 +121,9 @@ export const CheckoutPage = () => {
     [submitting, cartLoading, cartSummary, storeStatus?.is_sleep_mode, paymentReceipt, receiptError],
   );
 
-  // payment_link убран, т.к. не используется
+  // Проверяем наличие ссылки на оплату
+  const paymentLink = process.env.NEXT_PUBLIC_PAYMENT_LINK;
+  const hasPaymentLink = paymentLink && paymentLink.trim() !== '' && paymentLink !== '#';
 
   const handleReceiptChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -202,20 +204,28 @@ export const CheckoutPage = () => {
               <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                 Перейдите по ссылке для оплаты заказа через Kaspi Pay или другой платёжный сервис
               </p>
+              {!hasPaymentLink && (
+                <p className="text-xs text-destructive mt-2">
+                  ⚠️ Ссылка на оплату не настроена. Обратитесь к администратору.
+                </p>
+              )}
             </div>
             <Button
               asChild
               className="w-full h-11 sm:h-12 text-base font-semibold"
-              disabled={submitting || !process.env.NEXT_PUBLIC_PAYMENT_LINK}
+              disabled={submitting || !hasPaymentLink}
             >
               <a
-                href={process.env.NEXT_PUBLIC_PAYMENT_LINK || '#'}
+                href={hasPaymentLink ? paymentLink : '#'}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => {
-                  if (submitting || !process.env.NEXT_PUBLIC_PAYMENT_LINK) {
+                  if (submitting || !hasPaymentLink) {
                     e.preventDefault();
                     e.stopPropagation();
+                    if (!hasPaymentLink) {
+                      toast.warning('Ссылка на оплату не настроена');
+                    }
                     return false;
                   }
                 }}
