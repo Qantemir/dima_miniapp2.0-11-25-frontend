@@ -215,6 +215,8 @@ export const CheckoutPage = () => {
                 onClick={(e) => {
                   if (submitting || !process.env.NEXT_PUBLIC_PAYMENT_LINK) {
                     e.preventDefault();
+                    e.stopPropagation();
+                    return false;
                   }
                 }}
               >

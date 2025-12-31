@@ -39,15 +39,34 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, children, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, children, disabled, ...props }, ref) => {
     // Если children undefined или null, используем пустой фрагмент
     const safeChildren = children === undefined || children === null ? null : children;
     
     const Comp = asChild ? Slot : "button";
+    
+    // Когда asChild=true, не передаем disabled на дочерний элемент (например, <a>)
+    // Вместо этого применяем визуальные стили через className
+    // Для ссылок используем opacity и cursor, но не pointer-events-none,
+    // чтобы onClick обработчик мог работать
+    if (asChild && disabled) {
+      const disabledClassName = 'opacity-50 cursor-not-allowed';
+      return (
+        <Comp 
+          className={cn(buttonVariants({ variant, size }), disabledClassName, className)} 
+          ref={ref} 
+          {...props}
+        >
+          {safeChildren}
+        </Comp>
+      );
+    }
+    
     return (
       <Comp 
         className={cn(buttonVariants({ variant, size, className }))} 
         ref={ref} 
+        disabled={disabled}
         {...props}
       >
         {safeChildren}
