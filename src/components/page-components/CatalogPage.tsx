@@ -297,12 +297,11 @@ export const CatalogPage = () => {
         </div>
       </header>
       <main
-        className="min-h-screen bg-background pb-20"
+        className="bg-background"
         role="main"
         style={{
           paddingTop: `calc(${headerHeight}px + env(safe-area-inset-top, 0px) + var(--tg-header-height, 0px))`,
-          overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch',
+          paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
         }}
       >
 
