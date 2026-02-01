@@ -13,7 +13,7 @@ import { toast } from '@/lib/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAdminView } from '@/contexts/AdminViewContext';
-import { ADMIN_IDS, type Cart } from '@/types/api';
+import { ADMIN_IDS, type CatalogResponse } from '@/types/api';
 import { Seo } from '@/components/Seo';
 import { useStoreStatus } from '@/contexts/StoreStatusContext';
 import { useCatalog, CATALOG_QUERY_KEY } from '@/hooks/useCatalog';
@@ -125,9 +125,9 @@ export const CatalogPage = () => {
       queryClient.setQueryData(CART_QUERY_KEY, updatedCart);
 
       // Оптимистично уменьшаем остатки вариации в каталоге, чтобы товар скрывался быстрее
-      queryClient.setQueryData(CATALOG_QUERY_KEY, (prev) => {
+      queryClient.setQueryData<CatalogResponse>(CATALOG_QUERY_KEY, (prev) => {
         if (!prev) return prev;
-        const next = { ...prev, products: [...prev.products] };
+        const next: CatalogResponse = { ...prev, products: [...prev.products] };
         const pIndex = next.products.findIndex(p => p.id === productId);
         if (pIndex === -1) return prev;
         const product = next.products[pIndex];
@@ -385,20 +385,13 @@ export const CatalogPage = () => {
         )}
       </section>
 
-      {console.log('CatalogPage render - cartDialogOpen:', cartDialogOpen, 'helpDialogOpen:', helpDialogOpen)}
       <CartDialog
         open={cartDialogOpen}
-        onOpenChange={(open) => {
-          console.log('CartDialog onOpenChange called with:', open);
-          setCartDialogOpen(open);
-        }}
+        onOpenChange={setCartDialogOpen}
       />
-      <HelpDialog 
-        open={helpDialogOpen} 
-        onOpenChange={(open) => {
-          console.log('HelpDialog onOpenChange called with:', open);
-          setHelpDialogOpen(open);
-        }} 
+      <HelpDialog
+        open={helpDialogOpen}
+        onOpenChange={setHelpDialogOpen}
       />
     </main>
     </>
