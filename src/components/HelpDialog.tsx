@@ -150,7 +150,7 @@ export const HelpDialog = ({ open, onOpenChange }: HelpDialogProps) => {
           <section>
             <h3 className="text-sm font-semibold text-foreground">Доставка</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Мы доставляем заказы от одного часа до двух после подтверждения. Доступны самовывоз и доставка курьером.
+              После подтверждения заказа таксист свяжется с вами для уточнения деталей доставки.
             </p>
             <ul className="mt-2 text-sm text-muted-foreground space-y-1 list-disc pl-4">
               <li>Укажите точный адрес доставки при оформлении заказа</li>
@@ -166,7 +166,7 @@ export const HelpDialog = ({ open, onOpenChange }: HelpDialogProps) => {
               <div className="text-sm">
                 <p className="font-medium text-foreground mb-1">✅ Принят</p>
                 <p className="text-muted-foreground">
-                  Заказ принят в работу и будет доставлен от одного часа до двух. Мы начнём готовить ваш заказ и свяжемся с вами для уточнения деталей доставки.
+                  Заказ принят в работу. Таксист свяжется с вами для уточнения деталей доставки.
                 </p>
               </div>
               <div className="text-sm">
