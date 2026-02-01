@@ -25,10 +25,24 @@ const Modal = ({
 }) => {
   useEffect(() => {
     if (!open) return;
+
     const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    const scrollY = window.scrollY;
+
     document.body.style.overflow = "hidden";
+    // Фиксируем позицию для предотвращения скачков на Android
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+
     return () => {
       document.body.style.overflow = originalOverflow;
+      document.body.style.position = originalPosition;
+      document.body.style.top = "";
+      document.body.style.width = "";
+      // Восстанавливаем позицию скролла
+      window.scrollTo(0, scrollY);
     };
   }, [open]);
 
@@ -81,7 +95,7 @@ export const HelpDialog = ({ open, onOpenChange }: HelpDialogProps) => {
           </p>
         </div>
 
-        <div className="space-y-4 overflow-y-auto flex-1 px-5 py-4 pr-4" style={{ scrollbarWidth: "thin" }}>
+        <div className="space-y-4 overflow-y-auto flex-1 px-5 py-4 pr-4" style={{ scrollbarWidth: "thin", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
           <section>
             <h3 className="text-sm font-semibold text-foreground">Как сделать заказ</h3>
             <ol className="mt-2 text-sm text-muted-foreground space-y-2 list-decimal pl-5">

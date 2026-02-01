@@ -34,10 +34,24 @@ const Modal = ({
 }) => {
   useEffect(() => {
     if (!open) return;
+
     const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    const scrollY = window.scrollY;
+
     document.body.style.overflow = "hidden";
+    // Фиксируем позицию для предотвращения скачков на Android
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+
     return () => {
       document.body.style.overflow = originalOverflow;
+      document.body.style.position = originalPosition;
+      document.body.style.top = "";
+      document.body.style.width = "";
+      // Восстанавливаем позицию скролла
+      window.scrollTo(0, scrollY);
     };
   }, [open]);
 
@@ -121,7 +135,7 @@ export const CartDialog = ({ open, onOpenChange }: CartDialogProps) => {
   if (isLoading) {
     return (
       <Modal open={open} onClose={() => onOpenChange(false)} labelledBy={titleId}>
-        <div className="flex flex-col gap-4 p-6 max-h-[80vh] overflow-y-auto">
+        <div className="flex flex-col gap-4 p-6 max-h-[80vh] overflow-y-auto" style={{ overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
           <div className="flex items-center justify-between">
             <h2 id={titleId} className="text-lg font-semibold text-foreground">
               Корзина
@@ -169,7 +183,7 @@ export const CartDialog = ({ open, onOpenChange }: CartDialogProps) => {
           </h2>
         </div>
 
-        <div id={contentId} className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+        <div id={contentId} className="flex-1 overflow-y-auto px-5 py-4 space-y-3" style={{ overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
           <AnimatedList className="space-y-2 sm:space-y-3">
             <AnimatePresence mode="popLayout">
               {cartItems.map((item) => (

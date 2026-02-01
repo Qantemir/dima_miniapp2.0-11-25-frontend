@@ -103,7 +103,10 @@
     height: 100%;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: none;
+    /* contain вместо none - лучше работает на Android */
+    overscroll-behavior-y: contain;
+    /* Разрешаем вертикальный скролл и pinch-zoom */
+    touch-action: pan-y pinch-zoom;
   }
 
   body {
@@ -120,6 +123,9 @@
     min-height: 100%;
     overflow-x: hidden;
     overscroll-behavior: contain;
+    /* Улучшения для Android */
+    touch-action: pan-y pinch-zoom;
+    -webkit-tap-highlight-color: transparent;
   }
 
   html {
