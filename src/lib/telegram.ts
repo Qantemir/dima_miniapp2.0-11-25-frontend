@@ -201,49 +201,27 @@ const preventPullDownToClose = (tg?: ExtendedTelegramWebApp | null) => {
     };
   }
 
-  // Fallback для старых версий Telegram
-  // Используем более щадящий подход для Android
-  let startY = 0;
-  let startScrollTop = 0;
-  let isPreventing = false;
+  // Для старых версий Telegram полагаемся на CSS overscroll-behavior: contain
+  // который уже установлен в globals.css
+  // НЕ используем passive: false на touchmove - это блокирует скролл на Android!
 
-  const getScrollTop = () => document.scrollingElement?.scrollTop ?? window.scrollY;
+  // Единственное что делаем - добавляем CSS класс для дополнительной защиты
+  document.documentElement.classList.add('tg-no-pull-close');
 
-  const handleTouchStart = (event: TouchEvent) => {
-    startY = event.touches[0]?.clientY ?? 0;
-    startScrollTop = getScrollTop();
-    isPreventing = false;
-  };
-
-  const handleTouchMove = (event: TouchEvent) => {
-    // Проверяем cancelable - на Android некоторые события нельзя отменить
-    if (!event.cancelable) return;
-
-    const currentY = event.touches[0]?.clientY ?? 0;
-    const deltaY = currentY - startY;
-    const currentScrollTop = getScrollTop();
-
-    // Блокируем ТОЛЬКО если:
-    // 1. Пользователь тянет вниз (deltaY > 10 - увеличенный порог для Android)
-    // 2. Страница была в самом верху при начале касания
-    // 3. Страница всё ещё в самом верху
-    const isPullingDown = deltaY > 10;
-    const wasAtTop = startScrollTop <= 0;
-    const isAtTop = currentScrollTop <= 0;
-
-    if (isPullingDown && wasAtTop && isAtTop) {
-      isPreventing = true;
-      event.preventDefault();
-    }
-  };
-
-  // Используем capture phase для раннего перехвата
-  document.addEventListener('touchstart', handleTouchStart, { passive: true, capture: false });
-  document.addEventListener('touchmove', handleTouchMove, { passive: false, capture: false });
+  // Добавляем стили если их ещё нет
+  if (!document.getElementById('tg-pull-prevent-style')) {
+    const style = document.createElement('style');
+    style.id = 'tg-pull-prevent-style';
+    style.textContent = `
+      .tg-no-pull-close {
+        overscroll-behavior-y: contain !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
 
   return () => {
-    document.removeEventListener('touchstart', handleTouchStart);
-    document.removeEventListener('touchmove', handleTouchMove);
+    document.documentElement.classList.remove('tg-no-pull-close');
   };
 };
 

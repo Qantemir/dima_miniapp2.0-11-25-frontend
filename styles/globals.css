@@ -175,5 +175,20 @@
     transition-property: color, background-color, border-color, opacity, transform;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 150ms;
+    /* manipulation убирает 300ms delay на touch и разрешает pan/pinch */
+    touch-action: manipulation;
+  }
+
+  /* Основной контент должен скроллиться свободно */
+  main,
+  [role="main"] {
+    touch-action: pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Карточки и интерактивные элементы */
+  .card,
+  [class*="Card"] {
+    touch-action: manipulation;
   }
 }
