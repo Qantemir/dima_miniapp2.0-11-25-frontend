@@ -301,6 +301,7 @@ export const CatalogPage = () => {
         role="main"
         style={{
           paddingTop: `calc(${headerHeight}px + env(safe-area-inset-top, 0px) + var(--tg-header-height, 0px))`,
+          touchAction: 'pan-y',
         }}
       >
 

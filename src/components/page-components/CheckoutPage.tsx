@@ -188,12 +188,15 @@ export const CheckoutPage = () => {
         </div>
       </header>
 
-      {/* Form */}
-      <div 
-        className="min-h-screen bg-background pb-32 sm:pb-24"
+      {/* Form: Enter в однострочных полях — переход на следующее поле; в textarea — новая строка */}
+      <form
+        className="min-h-screen bg-background pb-32 sm:pb-24 overflow-y-auto overflow-x-hidden"
         style={{
-          paddingTop: `calc(${headerHeight}px + env(safe-area-inset-top, 0px) + var(--tg-header-height, 0px))`
+          paddingTop: `calc(${headerHeight}px + env(safe-area-inset-top, 0px) + var(--tg-header-height, 0px))`,
+          WebkitOverflowScrolling: 'touch',
+          touchAction: 'pan-y',
         }}
+        onSubmit={(e) => e.preventDefault()}
       >
       <div className="px-4 py-5 sm:px-6 sm:py-6 space-y-6">
         {/* Ссылка на оплату */}
@@ -243,6 +246,12 @@ export const CheckoutPage = () => {
               id="name"
               value={formData.name}
               onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  document.getElementById('phone')?.focus();
+                }
+              }}
               placeholder="Как к вам обращаться?"
               disabled={submitting}
               className="h-11 text-base"
@@ -256,6 +265,12 @@ export const CheckoutPage = () => {
               type="tel"
               value={formData.phone}
               onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  document.getElementById('address')?.focus();
+                }
+              }}
               placeholder="+7 (900) 123-45-67"
               disabled={submitting}
               className="h-11 text-base"
@@ -383,6 +398,7 @@ export const CheckoutPage = () => {
         </Card>
 
         <Button
+          type="submit"
           className="w-full h-12 sm:h-14 text-base sm:text-lg font-semibold shadow-lg"
           disabled={isSubmitDisabled}
           onClick={handleSubmit}
@@ -390,7 +406,7 @@ export const CheckoutPage = () => {
           {submitting ? 'Отправка...' : 'Подтвердить заказ'}
         </Button>
       </div>
-      </div>
+      </form>
       </PageTransition>
     </>
   );
