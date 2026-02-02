@@ -191,6 +191,7 @@ type ExtendedTelegramWebApp = TelegramWebApp & {
 };
 
 const preventPullDownToClose = (tg?: ExtendedTelegramWebApp | null) => {
+  // Если доступен API Telegram (версия 7.7+), используем его — это лучший вариант
   if (tg && typeof tg.disableVerticalSwipes === 'function') {
     tg.disableVerticalSwipes();
     return () => {
@@ -200,27 +201,27 @@ const preventPullDownToClose = (tg?: ExtendedTelegramWebApp | null) => {
     };
   }
 
-  let startY = 0;
-  const getScrollTop = () => document.scrollingElement?.scrollTop ?? window.scrollY;
+  // Для старых версий Telegram полагаемся на CSS overscroll-behavior: contain
+  // который уже установлен в globals.css
+  // НЕ используем passive: false на touchmove - это блокирует скролл на Android!
 
-  const handleTouchStart = (event: TouchEvent) => {
-    startY = event.touches[0]?.clientY ?? 0;
-  };
+  // Единственное что делаем - добавляем CSS класс для дополнительной защиты
+  document.documentElement.classList.add('tg-no-pull-close');
 
-  const handleTouchMove = (event: TouchEvent) => {
-    const currentY = event.touches[0]?.clientY ?? 0;
-    const isPullingDown = currentY - startY > 8;
-    if (isPullingDown && getScrollTop() <= 0) {
-      event.preventDefault();
-    }
-  };
-
-  document.addEventListener('touchstart', handleTouchStart, { passive: true });
-  document.addEventListener('touchmove', handleTouchMove, { passive: false });
+  // Добавляем стили если их ещё нет
+  if (!document.getElementById('tg-pull-prevent-style')) {
+    const style = document.createElement('style');
+    style.id = 'tg-pull-prevent-style';
+    style.textContent = `
+      .tg-no-pull-close {
+        overscroll-behavior-y: contain !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
 
   return () => {
-    document.removeEventListener('touchstart', handleTouchStart);
-    document.removeEventListener('touchmove', handleTouchMove);
+    document.documentElement.classList.remove('tg-no-pull-close');
   };
 };
 

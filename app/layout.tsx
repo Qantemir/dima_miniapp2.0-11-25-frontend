@@ -173,20 +173,15 @@ export default function RootLayout({
               
               function resetZoom() {
                 if (viewport) {
-                  viewport.setAttribute('content', 
+                  viewport.setAttribute('content',
                     'width=device-width, initial-scale=' + initialScale + ', maximum-scale=' + initialScale + ', minimum-scale=' + initialScale + ', user-scalable=no, viewport-fit=cover'
                   );
                 }
-                document.body.style.zoom = '1';
-                document.body.style.transform = 'scale(1)';
-                if (document.documentElement.style.zoom !== undefined) {
-                  document.documentElement.style.zoom = '1';
-                  document.documentElement.style.transform = 'scale(1)';
-                }
+                // НЕ ставим transform на body/html - это ломает скролл на Android!
+                // Только zoom для инпутов
                 const inputs = document.querySelectorAll('input, textarea');
                 inputs.forEach(function(input) {
-                  input.style.zoom = '1';
-                  input.style.transform = 'scale(1)';
+                  input.style.fontSize = '16px';
                 });
               }
               
